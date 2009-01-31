@@ -1,0 +1,118 @@
+<html>
+<head>
+<title>jsUnity - Lightweight Universal JavaScript Testing Framework</title>
+<style>
+body {
+	font-family: Verdana;
+	color: #333;
+	background: #fff;
+	margin: 0;
+	padding: 2em;
+}
+#tagline {
+	font-size: 0.8em;
+	margin-bottom: 2em;
+}
+#content {
+	width: 35em;
+}
+#footer {
+	font-size: 0.8em;
+	margin-top: 2em;
+	border: 1px solid #BDC7B4;
+	background: #EAEDE7;
+	padding: 0.5em;
+}
+#nav {
+	border: 1px solid #BDC7B4;
+	background: #EAEDE7;
+	padding: 1em;
+}
+pre {
+	border: 1px solid #BDC7B4;
+	padding: 1em;
+}
+</style>
+</head>
+<body>
+<img src="i/jsunity_logo.png" width="280" height="70">
+<div id="tagline">Lightweight Universal JavaScript Testing Framework</div>
+<p id="nav"><a href="http://jsunity.googlecode.com/files/jsunity-0.1.js">Download jUnity v0.1</a> | <a href="http://code.google.com/p/jsunity/">Project Home</a></p>
+<div id="content">
+<p><strong>jsUnity</strong> is a lightweight JavaScript testing framework that 
+is context-agnostic. It doesn't rely on any browser capabilities and 
+therefore can be run inside HTML, ASP, WSH or any other context that uses 
+JavaScript/JScript/ECMAScript. </p>
+<h3><a 
+name="Sample_usage_inside_HTML"/>Sample usage inside HTML</h3><pre 
+class="prettyprint">&lt;pre&gt;
+
+&lt;script type=&quot;text/javascript&quot; src=&quot;../jsunity.js&quot;&gt;&lt;/script&gt;
+&lt;script type=&quot;text/javascript&quot;&gt;
+function sampleTestSuite() {
+	function setUp() {
+		jsUnity.log(&quot;set up&quot;);
+	}
+
+	function tearDown() {
+		jsUnity.log(&quot;tear down&quot;);
+	}
+
+	function testLessThan() {
+		assertTrue(1 &lt; 2);
+	}
+	
+	function testPi() {
+		assertEquals(Math.PI, 22 / 7);
+	}
+}
+
+// optionally wire the log function to write to the context
+jsUnity.log = function (s) { document.write(s + &quot;&lt;/br&gt;&quot;); };
+var results = jsUnity.run(sampleTestSuite);
+// if result is not false,
+// access results.total, results.passed, results.failed
+
+&lt;/script&gt;
+&lt;/pre&gt;</pre><h3><a name="Sample_usage_inside_ASP_(JScript)"/>Sample usage inside ASP (JScript)</h3><pre class="prettyprint">&lt;%@LANGUAGE=&quot;JavaScript&quot;%&gt;
+&lt;% Response.Buffer = true; %&gt;
+&lt;!--#include file=&quot;../jsunity.js&quot;--&gt;
+&lt;% Response.Clear(); %&gt;
+&lt;pre&gt;
+&lt;%
+function sampleTestSuite() {
+	function setUp() {
+		jsUnity.log(&quot;set up&quot;);
+	}
+
+	function tearDown() {
+		jsUnity.log(&quot;tear down&quot;);
+	}
+
+	function testLessThan() {
+		assertTrue(1 &lt; 2);
+	}
+	
+	function testPi() {
+		assertEquals(Math.PI, 22 / 7);
+	}
+}
+
+jsUnity.log = function (s) { Response.Write(s + &quot;&lt;br/&gt;&quot;); }
+var result = jsUnity.run(sampleTestSuite);
+%&gt;
+&lt;/pre&gt;
+</pre>
+</div>
+<div id="footer">&copy;2009 Ates Goral, <a href="http://magnetiq.com">magnetiq.com<a>. Licensed under the <a href="http://www.opensource.org/licenses/mit-license.php">MIT license</a>.</div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-912088-4");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+</body>
+</html>
