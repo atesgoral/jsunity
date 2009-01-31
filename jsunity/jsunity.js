@@ -1,7 +1,7 @@
 //<%
 /**
  * jsUnity Universal JavaScript Testing Framework v0.1
- * http://code.google.com/p/jsunity/
+ * http://jsunity.com/
  *
  * Copyright (c) 2009 Ates Goral
  * Licensed under the MIT license.
