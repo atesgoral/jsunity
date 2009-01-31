@@ -39,14 +39,15 @@ pre {
 <div id="tagline">Lightweight Universal JavaScript Testing Framework</div>
 <p id="nav"><a href="http://jsunity.googlecode.com/files/jsunity-0.1.js">Download jsUnity v0.1</a> | <a href="http://code.google.com/p/jsunity/">Project Home</a></p>
 <div id="content">
-<p><strong>jsUnity</strong> is a lightweight JavaScript testing framework that 
+<p>
+<strong>jsUnity</strong> is a lightweight JavaScript testing framework that 
 is context-agnostic. It doesn't rely on any browser capabilities and 
 therefore can be run inside HTML, ASP, WSH or any other context that uses 
-JavaScript/JScript/ECMAScript. </p>
-<h3><a 
-name="Sample_usage_inside_HTML"/>Sample usage inside HTML</h3><pre 
-class="prettyprint">&lt;pre&gt;
-
+JavaScript/JScript/ECMAScript.
+</p>
+<h3><a/>Sample usage inside HTML</h3>
+<pre>
+&lt;pre&gt;
 &lt;script type=&quot;text/javascript&quot; src=&quot;../jsunity.js&quot;&gt;&lt;/script&gt;
 &lt;script type=&quot;text/javascript&quot;&gt;
 function sampleTestSuite() {
@@ -72,9 +73,12 @@ jsUnity.log = function (s) { document.write(s + &quot;&lt;/br&gt;&quot;); };
 var results = jsUnity.run(sampleTestSuite);
 // if result is not false,
 // access results.total, results.passed, results.failed
-
 &lt;/script&gt;
-&lt;/pre&gt;</pre><h3><a name="Sample_usage_inside_ASP_(JScript)"/>Sample usage inside ASP (JScript)</h3><pre class="prettyprint">&lt;%@LANGUAGE=&quot;JavaScript&quot;%&gt;
+&lt;/pre&gt;
+</pre>
+<h3><a/>Sample usage inside ASP (JScript)</h3>
+<pre>
+&lt;%@LANGUAGE=&quot;JavaScript&quot;%&gt;
 &lt;% Response.Buffer = true; %&gt;
 &lt;!--#include file=&quot;../jsunity.js&quot;--&gt;
 &lt;% Response.Clear(); %&gt;
