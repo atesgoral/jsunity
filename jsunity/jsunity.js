@@ -130,18 +130,18 @@ function fail() {
 
 (function () {
 	function parseSuiteFunction(suite) {
-		var tokens = /^function\s+.+?\{((?:[^}]*}?)+)}$/.exec(
+		var tokens = /^function\s*([^( ]*?)\s*\(.+?\{((?:[^}]*}?)+)}$/.exec(
 			suite.toString().split(/[\r\n]/).join(" "));
 
 		if (!tokens) {
 			throw "Invalid function.";
 		}
 
-		var runnerBody = tokens[1];
+		var runnerBody = tokens[2];
 
 		var ret = {
-			runner: new Function("f", runnerBody + "eval(f).call();"),
-			//name: "",
+			runner: new Function(runnerBody + "eval(this.fn).call();"),
+			//name: tokens[1],
 			tests: []
 		};
 
@@ -207,17 +207,17 @@ function fail() {
 
 				try {
 					if (suite.setUp) {
-						suite.runner("setUp");
+						suite.runner.call({ fn: "setUp" });
 					}
-					suite.runner(test); // suite.run(i)?
+					suite.runner.call({ fn: test });
 					if (suite.tearDown) {
-						suite.runner("tearDown");
+						suite.runner.call({ fn: "tearDown" });
 					}
 					passed++;
 					this.log("[PASSED] " + test);
 				} catch (e) {
 					if (suite.tearDown) {
-						suite.runner("tearDown");
+						suite.runner.call({ fn: "tearDown" });
 					}
 					this.log("[FAILED] " + test + ": " + e);
 				}
