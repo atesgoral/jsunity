@@ -47,8 +47,25 @@ function jsUnityTestSuite() {
 		delete origLog;
 	}
 
+	function testSetUp() {
+		// todo
+	}
+	
+	function testTearDown() {
+		// todo
+	}
+
+	function testLog() {
+		// todo
+	}
+
+	function testError() {
+		// todo
+	}
+
 	function testRunFunctionNamed() {
 		var results = jsUnity.run(namedTestSuite);
+		//assertEquals("namedTestSuite", results.name);
 		assertEquals(3, results.total);
 		assertEquals(2, results.passed);
 		assertEquals(1, results.failed);
