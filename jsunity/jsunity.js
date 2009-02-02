@@ -7,128 +7,132 @@
  * Licensed under the MIT license.
  * http://www.opensource.org/licenses/mit-license.php
  */
- 
-/**
- * Assert that the given Boolean expression evaluates to <code>true</code>
- *
- * @param expr The Boolean expression
- */
-function assertTrue(expr) {
-	if (!expr) {
-		throw "Expression does not evaluate to true";
-	}
-}
-
-/**
- * Assert that the given Boolean expression evaluates to <code>false</code>
- *
- * @param expr The Boolean expression
- */
-function assertFalse(expr) {
-	if (expr) {
-		throw "Condition does not evaluate to false";
-	}
-}
-
-/**
- * Assert that the given value matches what's expected
- *
- * @param expected The expected value
- * @param actual The actual given value
- */
-function assertEquals(expected, actual) {
-	if (expected !== actual) {
-		throw "Actual value does not match what's expected: [expected] "
-			+ expected + ", [actual] " + actual;
-	}
-}
-
-/**
- * Assert that the given value doesn't match the given unexpected value
- *
- * @param unexpected The unexpected value
- * @param actual The actual given value
- */
-function assertNotEquals(unexpected, actual) {
-	if (unexpected === actual) {
-		throw "Actual value matches the unexpected value: " + actual;
-	}
-}
-
-/**
- * Assert that the given object is <code>null</code>
- *
- * @param object The given object
- */
-function assertNull(object) {
-	if (object !== null) {
-		throw "Object is not null";
-	}
-}
-
-/**
- * Assert that the given object is not <code>null</code>
- *
- * @param object The given object
- */
-function assertNotNull(object) {
-	if (object === null) {
-		throw "Object is null";
-	}
-}
-
-/**
- * Assert that the given object is <code>undefined</code>
- *
- * @param object The given object
- */
-function assertUndefined(value) {
-	if (value !== undefined) {
-		throw "Value is not undefined";
-	}
-}
-
-/**
- * Assert that the given object is not <code>undefined</code>
- *
- * @param object The given object
- */
-function assertNotUndefined(value) {
-	if (value === undefined) {
-		throw "Value is undefined";
-	}
-}
-
-/**
- * Assert that the given object is <code>NaN</code>
- *
- * @param object The given object
- */
-function assertNaN(value) {
-	if (!isNaN(value)) {
-		throw "Value is not NaN";
-	}
-}
-
-/**
- * Assert that the given object is not <code>NaN</code>
- *
- * @param object The given object
- */
-function assertNotNaN(value) {
-	if (isNaN(value)) {
-		throw "Value is NaN";
-	}
-}
-
-/**
- * Fail the test by throwing an exception
- */
-function fail() {
-	throw "Test failed";
-}
 
 (function () {
+	var defaultAssertions = {
+		/**
+		 * Assert that the given Boolean expression evaluates to
+		 * <code>true</code>
+		 *
+		 * @param expr The Boolean expression
+		 */
+		assertTrue: function (expr) {
+			if (!expr) {
+				throw "Expression does not evaluate to true";
+			}
+		},
+		
+		/**
+		 * Assert that the given Boolean expression evaluates to
+		 * <code>false</code>
+		 *
+		 * @param expr The Boolean expression
+		 */
+		assertFalse: function (expr) {
+			if (expr) {
+				throw "Condition does not evaluate to false";
+			}
+		},
+		
+		/**
+		 * Assert that the given value matches what's expected
+		 *
+		 * @param expected The expected value
+		 * @param actual The actual given value
+		 */
+		assertEquals: function (expected, actual) {
+			if (expected !== actual) {
+				throw "Actual value does not match what's expected: [expected] "
+					+ expected + ", [actual] " + actual;
+			}
+		},
+		
+		/**
+		 * Assert that the given value doesn't match the given unexpected value
+		 *
+		 * @param unexpected The unexpected value
+		 * @param actual The actual given value
+		 */
+		assertNotEquals: function (unexpected, actual) {
+			if (unexpected === actual) {
+				throw "Actual value matches the unexpected value: " + actual;
+			}
+		},
+		
+		/**
+		 * Assert that the given object is <code>null</code>
+		 *
+		 * @param object The given object
+		 */
+		assertNull: function (object) {
+			if (object !== null) {
+				throw "Object is not null";
+			}
+		},
+		
+		/**
+		 * Assert that the given object is not <code>null</code>
+		 *
+		 * @param object The given object
+		 */
+		assertNotNull: function (object) {
+			if (object === null) {
+				throw "Object is null";
+			}
+		},
+		
+		/**
+		 * Assert that the given object is <code>undefined</code>
+		 *
+		 * @param object The given object
+		 */
+		assertUndefined: function (value) {
+			if (value !== undefined) {
+				throw "Value is not undefined";
+			}
+		},
+		
+		/**
+		 * Assert that the given object is not <code>undefined</code>
+		 *
+		 * @param object The given object
+		 */
+		assertNotUndefined: function (value) {
+			if (value === undefined) {
+				throw "Value is undefined";
+			}
+		},
+		
+		/**
+		 * Assert that the given object is <code>NaN</code>
+		 *
+		 * @param object The given object
+		 */
+		assertNaN: function (value) {
+			if (!isNaN(value)) {
+				throw "Value is not NaN";
+			}
+		},
+		
+		/**
+		 * Assert that the given object is not <code>NaN</code>
+		 *
+		 * @param object The given object
+		 */
+		assertNotNaN: function (value) {
+			if (isNaN(value)) {
+				throw "Value is NaN";
+			}
+		},
+		
+		/**
+		 * Fail the test by throwing an exception
+		 */
+		fail: function () {
+			throw "Test failed";
+		}
+	};
+
 	function parseSuiteFunction(suite) {
 		var tokens = /^function\s*([^( ]*?)\s*\(.+?\{((?:[^}]*}?)+)}$/.exec(
 			suite.toString().split(/[\r\n]/).join(" "));
@@ -140,8 +144,11 @@ function fail() {
 		var runnerBody = tokens[2];
 
 		var ret = {
-			runner: new Function(runnerBody + "eval(this.fn).call();"),
-			//name: tokens[1],
+			runner: new Function(
+				"with (jsUnity.assertions) {"
+				+ runnerBody
+				+ "} eval(this.fn).call();"),
+			//name: tokens[1], // todo: why doesn't this work?
 			tests: []
 		};
 
@@ -185,6 +192,8 @@ function fail() {
 	}
 
 	jsUnity = {
+		assertions: defaultAssertions,
+
 		log: function () {},
 
 		error: function (s) { this.log("[ERROR] " + s); },
