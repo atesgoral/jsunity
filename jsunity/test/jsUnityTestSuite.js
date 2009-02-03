@@ -134,7 +134,7 @@ function jsUnityTestSuite() {
 
     function testRunFunctionNamed() {
         var results = jsUnity.run(namedTestSuite);
-        //assertEquals("namedTestSuite", results.name);
+        assertEquals("namedTestSuite", results.name);
         assertEquals(3, results.total);
         assertEquals(2, results.passed);
         assertEquals(1, results.failed);

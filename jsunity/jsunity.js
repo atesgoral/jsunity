@@ -134,7 +134,7 @@
     };
 
     function parseSuiteFunction(suite) {
-        var tokens = /^function\s*([^( ]*?)\s*\(.+?\{((?:[^}]*}?)+)}$/.exec(
+        var tokens = /^\s*function\s*([^( \t]*?)\s*\(.*?\)\s*\{((?:[^}]*\}?)+)\}\s*$/.exec(
             suite.toString().split(/[\r\n]/).join(" "));
 
         if (!tokens) {
@@ -148,7 +148,7 @@
                 "with (jsUnity.assertions) {"
                 + runnerBody
                 + "} eval(this.fn).call();"),
-            //name: tokens[1], // todo: why doesn't this work?
+            name: tokens[1],
             tests: []
         };
 
@@ -246,6 +246,7 @@
             this.log(failed + " tests failed");
 
             return {
+                name: suite.name,
                 total: total,
                 passed: passed,
                 failed: failed
