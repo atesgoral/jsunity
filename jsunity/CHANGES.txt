@@ -1,3 +1,6 @@
+  - Fixed test suite name passing bug
+  - Made function parsing regex more lax to work with AppJet
+
 0.2
   - Moved default assertions into defaultAssertions, out of the global scope
   - Assertion set can be overridden
