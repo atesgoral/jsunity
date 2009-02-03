@@ -1,0 +1,8 @@
+0.2
+  - Moved default assertions into defaultAssertions, out of the global scope
+  - Assertion set can be overridden
+  - Added attachAssertions
+
+0.1
+  - Initial release
+  - Supports only function-style test suites
