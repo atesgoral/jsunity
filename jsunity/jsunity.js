@@ -193,14 +193,22 @@
 
     jsUnity = {
         assertions: defaultAssertions,
+        
+        attachAssertions: function (scope) {
+            scope = scope || this; // Default to current scope
+
+            for (var fn in jsUnity.assertions) {
+                scope[fn] = jsUnity.assertions[fn];
+            }
+        },
 
         log: function () {},
 
         error: function (s) { this.log("[ERROR] " + s); },
 
-        run: function (s) {
+        run: function () {
             try {
-                var suite = parseSuite(s);
+                var suite = parseSuite(arguments[0]);
             } catch (e) {
                 this.error("Invalid test suite: " + e);
                 return false;
