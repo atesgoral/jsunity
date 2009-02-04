@@ -154,7 +154,9 @@ function jsUnityTestSuite() {
 
     function testRunObject() {
         var results = jsUnity.run(objectTestSuite);
-        assertFalse(results);
+        assertEquals(3, results.total);
+        assertEquals(2, results.passed);
+        assertEquals(1, results.failed);
     } 
 
     function testRunString() {

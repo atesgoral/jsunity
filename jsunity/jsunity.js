@@ -173,6 +173,27 @@
         return ret;
     }
 
+    function parseSuiteObject (suite) {
+      var tests = [];
+
+      for(var name in suite){
+        if(suite.hasOwnProperty(name)){
+          if (/^test/.test(name)) {
+                  tests.push(name);
+          }
+        }
+      }
+
+      return {
+        tests: tests,
+        name: suite.name,
+        setUp: !!suite.setUp,
+        tearDown: !!suite.tearDown,
+        runner: function (){ suite[this.fn]() }
+      };
+
+    }
+
     function parseSuite(suite) {
         if (suite instanceof Function) {
             // functions inside function
@@ -182,7 +203,7 @@
             throw "Not implemented";
         } else if (suite instanceof Object) {
             // functions as properties
-            throw "Not implemented";
+            return parseSuiteObject(suite);
         } else if (typeof suite === "string") {
             // source code of functions
             throw "Not implemented";
