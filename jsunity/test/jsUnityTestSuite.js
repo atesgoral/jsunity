@@ -22,11 +22,17 @@ var objectTestSuite = {
     testObjectFail: function () { throw "fail"; }
 };
 
+function setUp() {}
+function tearDown() {}
+function testArrayPass1() {}
+function testArrayPass2() {}
+function testArrayFail() { throw "fail"; }
+
 var arrayTestSuite = [
     "testArrayPass1",
     "testArrayPass2",
     "testArrayFail"
-    ];
+];
 
 var stringTestSuite = "\
         function setUp() {}\
@@ -149,7 +155,9 @@ function jsUnityTestSuite() {
 
     function testRunArray() {
         var results = jsUnity.run(arrayTestSuite);
-        assertFalse(results);
+        assertEquals(3, results.total);
+        assertEquals(2, results.passed);
+        assertEquals(1, results.failed);
     } 
 
     function testRunObject() {
@@ -161,7 +169,9 @@ function jsUnityTestSuite() {
 
     function testRunString() {
         var results = jsUnity.run(stringTestSuite);
-        assertFalse(results);
+        assertEquals(3, results.total);
+        assertEquals(2, results.passed);
+        assertEquals(1, results.failed);
     }
 
     function testRunNumber() {

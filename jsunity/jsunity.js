@@ -133,80 +133,106 @@
         }
     };
 
-    function parseSuiteFunction(suite) {
-        var tokens = /^\s*function\s*([^( \t]*?)\s*\(.*?\)\s*\{((?:[^}]*\}?)+)\}\s*$/.exec(
-            suite.toString().split(/[\r\n]/).join(" "));
+    var functionToStringHasComments = /PROBE/.test(function () {/*PROBE*/});
 
+    function parseSuiteFunction(fn) {
+        if (functionToStringHasComments) {
+            throw "This test suite type is not supported in this environment.";
+        }
+
+        var s = fn.toString();
+
+        var tokens =
+            /^[\s\r\n]*function[\s\r\n]*([^\(\s\r\n]*?)[\s\r\n]*\([^\)\s\r\n]*\)[\s\r\n]*\{((?:[^}]*\}?)+)\}\s*$/
+            .exec(s);
+        
         if (!tokens) {
             throw "Invalid function.";
         }
 
-        var runnerBody = tokens[2];
+        var suite = parseSuiteString(tokens[2]);
 
-        var ret = {
-            runner: new Function(
-                "with (jsUnity.assertions) {"
-                + runnerBody
-                + "} eval(this.fn).call();"),
-            name: tokens[1],
-            tests: []
+        suite.name = tokens[1];
+
+        return suite;
+    }
+
+    function parseSuiteArray(tests) {
+        var scope = this;
+
+        // copy function refs to our own scope
+        // var scope = {};
+        // eval("typeof " + name) !== "undefined" && eval(name + "instanceof Function")
+        // scope[name] = eval(name)
+
+        return {
+            tests: tests,
+            setUp: !!scope.setUp,
+            tearDown: !!scope.tearDown,
+            runner: function () { scope[this.fn](); }
         };
+    }
 
-        var fns = runnerBody.match(/function\s+[^(]+/g);
+    function parseSuiteObject(obj) {
+        var tests = [];
 
-        if (fns) {
-            for (var i = 0; i < fns.length; i++) {
-                var tokens = /\s(.+)$/.exec(fns[i]);
-
-                if (tokens) {
-                    var name = tokens[1];
-
-                    if (/^test/.test(name)) {
-                        ret.tests.push(name);
-                    } else if (/^setUp|tearDown$/.test(name)) {
-                        ret[name] = true;
-                    }
+        for (var name in obj) {
+            if (obj.hasOwnProperty(name)) { // Necessary?
+                if (/^test/.test(name)) { // also check instanceof Function
+                    tests.push(name);
                 }
             }
         }
 
-        return ret;
+        var suite = parseSuiteArray.call(obj, tests);
+
+        suite.name = obj.name;
+
+        return suite;
     }
 
-    function parseSuiteObject (suite) {
-      var tests = [];
-
-      for(var name in suite){
-        if(suite.hasOwnProperty(name)){
-          if (/^test/.test(name)) {
-                  tests.push(name);
-          }
+    function parseSuiteString(str) {
+        if (functionToStringHasComments) {
+            throw "This test suite type is not supported in this environment.";
         }
-      }
 
-      return {
-        tests: tests,
-        name: suite.name,
-        setUp: !!suite.setUp,
-        tearDown: !!suite.tearDown,
-        runner: function (){ suite[this.fn]() }
-      };
+        var suite = {
+            runner: new Function(
+                "with (jsUnity.assertions) {"
+                + str
+                + "} eval(this.fn).call();"),
+            tests: []
+        };
 
+        var fns = str.match(/function[\s\r\n]+[^(]+/g);
+
+        if (fns) {
+            for (var i = 0; i < fns.length; i++) {
+                var name = fns[i].split(/function[\s\r\n]+/)[1];
+
+                if (/^test/.test(name)) {
+                    suite.tests.push(name);
+                } else if (/^setUp|tearDown$/.test(name)) {
+                    suite[name] = true;
+                }
+            }
+        }
+        
+        return suite;
     }
 
-    function parseSuite(suite) {
-        if (suite instanceof Function) {
+    function parseSuite(v) {
+        if (v instanceof Function) {
             // functions inside function
-            return parseSuiteFunction(suite);
-        } else if (suite instanceof Array) {
+            return parseSuiteFunction(v);
+        } else if (v instanceof Array) {
             // array of test function names
-            throw "Not implemented";
-        } else if (suite instanceof Object) {
+            return parseSuiteArray(v);
+        } else if (v instanceof Object) {
             // functions as properties
-            return parseSuiteObject(suite);
-        } else if (typeof suite === "string") {
-            // source code of functions
-            throw "Not implemented";
+            return parseSuiteObject(v);
+        } else if (typeof v === "string") {
+            return parseSuiteString(v);
         } else {
             throw "Must be a function, array, object or string.";
         }
