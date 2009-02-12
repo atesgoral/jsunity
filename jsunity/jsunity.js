@@ -132,13 +132,93 @@
             throw "Test failed";
         }
     };
+   
+    function extractFunctionNames(src) {
+        function tokenize(code) {
+            var code = code.split(/\\./).join(''),
+                regex = /function|\(|\)|\{|\}|\/\*|\*\/|\/\/|"|'|\n|\s+/mg,
+                tokens = [],
+                pos = 0;
+        
+            for(var matches; matches = regex.exec(code); pos = regex.lastIndex) {
+                var match = matches[0],
+                    matchStart = regex.lastIndex - match.length;
+        
+                if(pos < matchStart)
+                    tokens.push(code.substring(pos, matchStart));
+        
+                tokens.push(match);
+            }
+        
+            if(pos < code.length)
+                tokens.push(code.substring(pos));
+        
+            return tokens;
+        }
 
-    var functionToStringHasComments = /PROBE/.test(function () {/*PROBE*/});
+        var separators = {
+            '/*' : '*/',
+            '//' : '\n',
+            '"' : '"',
+            '\'' : '\''
+        };
+
+        var names = [],
+            tokens = tokenize(src),
+            level = 0;
+    
+        for(var i = 0; i < tokens.length; ++i) {
+            var token = tokens[i];
+    
+            switch(token) {
+                case '{':
+                ++level;
+                break;
+    
+                case '}':
+                --level;
+                break;
+    
+                case 'function':
+                if(level === 0) {
+                    while(++i < tokens.length) {
+                        token = tokens[i];
+    
+                        if(token === '(')
+                            break;
+    
+                        if(/^\s*$/.test(token))
+                            continue;
+    
+                        if(token === '/*' || token === '//') {
+                            var sep = separators[token];
+                            while(++i < tokens.length && tokens[i] !== sep);
+                            continue;
+                        }
+    
+                        names.push(token);
+                        break;
+                    }
+                }
+                break;
+    
+                default:
+                if(separators.hasOwnProperty(token)) {
+                    var sep = separators[token];
+                    while(++i < tokens.length && tokens[i] !== sep);
+                }
+            }
+        }
+    
+        return names;
+    }
+
+    //var functionToStringHasComments = /PROBE/.test(function () {/*PROBE*/});
 
     function parseSuiteFunction(fn) {
-        if (functionToStringHasComments) {
+        /*if (functionToStringHasComments) {
             throw "This test suite type is not supported in this environment.";
-        }
+        }*/
 
         var s = fn.toString();
 
@@ -192,9 +272,9 @@
     }
 
     function parseSuiteString(str) {
-        if (functionToStringHasComments) {
+        /*if (functionToStringHasComments) {
             throw "This test suite type is not supported in this environment.";
-        }
+        }*/
 
         var suite = {
             runner: new Function(
@@ -204,6 +284,7 @@
             tests: []
         };
 
+        /*
         var fns = str.match(/function[\s\r\n]+[^(]+/g);
 
         if (fns) {
@@ -215,6 +296,19 @@
                 } else if (/^setUp|tearDown$/.test(name)) {
                     suite[name] = true;
                 }
+            }
+        }
+        */
+        
+        var fns = extractFunctionNames(str);
+        
+        for (var i = 0; i < fns.length; i++) {
+            var name = fns[i];
+
+            if (/^test/.test(name)) {
+                suite.tests.push(name);
+            } else if (/^setUp|tearDown$/.test(name)) {
+                suite[name] = true;
             }
         }
         
