@@ -333,10 +333,11 @@
     }
 
     jsUnity = {
+        globalScope: this,
         assertions: defaultAssertions,
         
         attachAssertions: function (scope) {
-            scope = scope || this; // Default to current scope
+            scope = scope || this.globalScope; // Default to global scope
 
             for (var fn in jsUnity.assertions) {
                 scope[fn] = jsUnity.assertions[fn];
