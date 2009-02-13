@@ -172,4 +172,4 @@ var jsUnityTestSuite = {
     testRunNumber: function () {
         jsUnity.assertions.assertFalse(jsUnity.run(42));
     }
-}
+};
