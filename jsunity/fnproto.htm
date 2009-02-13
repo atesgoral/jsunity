@@ -1,0 +1,69 @@
+<script>
+function testGlobalFn() {}
+
+function testSuite() {
+    function testA() {
+        function testNested() {
+        }
+    }
+    
+    // function testComment() {}
+    // function testGlobalFn() {}
+    
+    function // comments
+    testB /* don't matter */
+    () // neither does whitespace
+    {
+        var s = "function testString() {}";
+    }
+}
+
+function splitFunction(fn) {
+    var tokens =
+        /^[\s\r\n]*function[\s\r\n]*([^\(\s\r\n]*?)[\s\r\n]*\([^\)\s\r\n]*\)[\s\r\n]*\{((?:[^}]*\}?)+)\}\s*$/
+        .exec(fn);
+    
+    if (!tokens) {
+        throw "Invalid function.";
+    }
+    
+    return {
+        name: tokens[1],
+        body: tokens[2]
+    };
+}
+
+var probeOutside = function () {
+    return eval(
+        "typeof $fn$ !== \"undefined\" && $fn$ instanceof Function"
+        .split("$fn$")
+        .join(arguments[0]));
+};
+
+function extractFunctions(fn) {
+    var fnParts = splitFunction(fn);
+    
+    var probeInside = new Function(
+        splitFunction(probeOutside).body + fnParts.body);
+    
+    var tokens;
+    var fns = [];
+    var tokenRe = /(\w+)/g;
+    
+    while ((tokens = tokenRe.exec(fnParts.body))) {
+        var token = tokens[1];
+
+        try {
+            if (probeInside(token) && !probeOutside(token)) {
+                fns.push(token);
+            }
+        } catch (e) {
+            // ignore token
+        }
+    }
+    
+    return fns;
+}
+
+document.write(extractFunctions(testSuite));
+</script> 
