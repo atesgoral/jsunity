@@ -10,36 +10,18 @@
 
 (function () {
     var defaultAssertions = {
-        /**
-         * Assert that the given Boolean expression evaluates to
-         * <code>true</code>
-         *
-         * @param expr The Boolean expression
-         */
         assertTrue: function (expr) {
             if (!expr) {
                 throw "Expression does not evaluate to true";
             }
         },
         
-        /**
-         * Assert that the given Boolean expression evaluates to
-         * <code>false</code>
-         *
-         * @param expr The Boolean expression
-         */
         assertFalse: function (expr) {
             if (expr) {
                 throw "Condition does not evaluate to false";
             }
         },
         
-        /**
-         * Assert that the given value matches what's expected
-         *
-         * @param expected The expected value
-         * @param actual The actual given value
-         */
         assertEquals: function (expected, actual) {
             if (expected !== actual) {
                 throw "Actual value does not match what's expected: [expected] "
@@ -47,179 +29,56 @@
             }
         },
         
-        /**
-         * Assert that the given value doesn't match the given unexpected value
-         *
-         * @param unexpected The unexpected value
-         * @param actual The actual given value
-         */
         assertNotEquals: function (unexpected, actual) {
             if (unexpected === actual) {
                 throw "Actual value matches the unexpected value: " + actual;
             }
         },
         
-        /**
-         * Assert that the given object is <code>null</code>
-         *
-         * @param object The given object
-         */
         assertNull: function (object) {
             if (object !== null) {
                 throw "Object is not null";
             }
         },
         
-        /**
-         * Assert that the given object is not <code>null</code>
-         *
-         * @param object The given object
-         */
         assertNotNull: function (object) {
             if (object === null) {
                 throw "Object is null";
             }
         },
         
-        /**
-         * Assert that the given object is <code>undefined</code>
-         *
-         * @param object The given object
-         */
         assertUndefined: function (value) {
             if (value !== undefined) {
                 throw "Value is not undefined";
             }
         },
         
-        /**
-         * Assert that the given object is not <code>undefined</code>
-         *
-         * @param object The given object
-         */
         assertNotUndefined: function (value) {
             if (value === undefined) {
                 throw "Value is undefined";
             }
         },
         
-        /**
-         * Assert that the given object is <code>NaN</code>
-         *
-         * @param object The given object
-         */
         assertNaN: function (value) {
             if (!isNaN(value)) {
                 throw "Value is not NaN";
             }
         },
         
-        /**
-         * Assert that the given object is not <code>NaN</code>
-         *
-         * @param object The given object
-         */
         assertNotNaN: function (value) {
             if (isNaN(value)) {
                 throw "Value is NaN";
             }
         },
         
-        /**
-         * Fail the test by throwing an exception
-         */
         fail: function () {
             throw "Test failed";
         }
     };
-   
-    function extractFunctionNames(src) {
-        function tokenize(code) {
-            var code = code.split(/\\./).join(''),
-                regex = /function|\(|\)|\{|\}|\/\*|\*\/|\/\/|"|'|\n|\s+/mg,
-                tokens = [],
-                pos = 0;
-        
-            for(var matches; matches = regex.exec(code); pos = regex.lastIndex) {
-                var match = matches[0],
-                    matchStart = regex.lastIndex - match.length;
-        
-                if(pos < matchStart)
-                    tokens.push(code.substring(pos, matchStart));
-        
-                tokens.push(match);
-            }
-        
-            if(pos < code.length)
-                tokens.push(code.substring(pos));
-        
-            return tokens;
-        }
 
-        var separators = {
-            '/*' : '*/',
-            '//' : '\n',
-            '"' : '"',
-            '\'' : '\''
-        };
-
-        var names = [],
-            tokens = tokenize(src),
-            level = 0;
-    
-        for(var i = 0; i < tokens.length; ++i) {
-            var token = tokens[i];
-    
-            switch(token) {
-                case '{':
-                ++level;
-                break;
-    
-                case '}':
-                --level;
-                break;
-    
-                case 'function':
-                if(level === 0) {
-                    while(++i < tokens.length) {
-                        token = tokens[i];
-    
-                        if(token === '(')
-                            break;
-    
-                        if(/^\s*$/.test(token))
-                            continue;
-    
-                        if(token === '/*' || token === '//') {
-                            var sep = separators[token];
-                            while(++i < tokens.length && tokens[i] !== sep);
-                            continue;
-                        }
-    
-                        names.push(token);
-                        break;
-                    }
-                }
-                break;
-    
-                default:
-                if(separators.hasOwnProperty(token)) {
-                    var sep = separators[token];
-                    while(++i < tokens.length && tokens[i] !== sep);
-                }
-            }
-        }
-    
-        return names;
-    }
-
-    //var functionToStringHasComments = /PROBE/.test(function () {/*PROBE*/});
+    var functionToStringHasComments = /PROBE/.test(function () {/*PROBE*/});
 
     function parseSuiteFunction(fn) {
-        /*if (functionToStringHasComments) {
-            throw "This test suite type is not supported in this environment.";
-        }*/
-
         var s = fn.toString();
 
         var tokens =
@@ -236,19 +95,28 @@
 
         return suite;
     }
+    
+    function $isNameFunctionTmp() {
+        return typeof $name$ !== "undefined" && $name$ instanceof Function;
+    }
 
+    function isNameFunction(name) {
+        eval($isNameFunctionTmp.toString().split("$name$").join(name))();
+    }
+
+    // items as strings or functions
     function parseSuiteArray(tests) {
         var scope = this;
 
-        // copy function refs to our own scope
-        // var scope = {};
-        // eval("typeof " + name) !== "undefined" && eval(name + "instanceof Function")
-        // scope[name] = eval(name)
+        var suite = {
+            tests: []
+        };
+        // filter items by isNameFunction
 
         return {
             tests: tests,
-            setUp: !!scope.setUp,
-            tearDown: !!scope.tearDown,
+            setUp: scope.setUp instanceof Function,
+            tearDown: scope.tearDown instanceof Function,
             runner: function () { scope[this.fn](); }
         };
     }
@@ -257,8 +125,8 @@
         var tests = [];
 
         for (var name in obj) {
-            if (obj.hasOwnProperty(name)) { // Necessary?
-                if (/^test/.test(name)) { // also check instanceof Function
+            if (obj.hasOwnProperty(name) && obj[name] instanceof Function) {
+                if (/^test/.test(name)) {
                     tests.push(name);
                 }
             }
@@ -272,19 +140,10 @@
     }
 
     function parseSuiteString(str) {
-        /*if (functionToStringHasComments) {
-            throw "This test suite type is not supported in this environment.";
-        }*/
-
         var suite = {
-            runner: new Function(
-                "with (jsUnity.assertions) {"
-                + str
-                + "} eval(this.fn).call();"),
             tests: []
         };
 
-        /*
         var fns = str.match(/function[\s\r\n]+[^(]+/g);
 
         if (fns) {
@@ -298,20 +157,12 @@
                 }
             }
         }
-        */
-        
-        var fns = extractFunctionNames(str);
-        
-        for (var i = 0; i < fns.length; i++) {
-            var name = fns[i];
 
-            if (/^test/.test(name)) {
-                suite.tests.push(name);
-            } else if (/^setUp|tearDown$/.test(name)) {
-                suite[name] = true;
-            }
-        }
-        
+        suite.runner = new Function(
+            "with (jsUnity.assertions) {"
+            + str
+            + "} if (eval(this.fn).call();");
+
         return suite;
     }
 
