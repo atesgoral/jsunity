@@ -46,12 +46,6 @@ with (jsUnity.assertions) {
     function checkAssertions(scope) {
         for (var fn in jsUnity.assertions) {
             assertEquals(jsUnity.assertions[fn], scope[fn]);
-            delete scope[fn];
-        }
-        
-        // Make sure that there are no unwanted properties
-        for (var prop in scope) {
-            fail();
         }
     }
 }
@@ -127,9 +121,8 @@ function jsUnityTestSuite() {
     }
 
     function testAttachAssertionsDefaultScope() {
-        var scope = {};
-        jsUnity.attachAssertions.call(scope);
-        checkAssertions(scope);
+        jsUnity.attachAssertions();
+        checkAssertions(window);
     }
 
     function testAttachAssertionsGivenScope() {
