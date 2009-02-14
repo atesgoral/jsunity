@@ -1,6 +1,6 @@
 //<%
 /**
- * jsUnity Universal JavaScript Testing Framework v0.2
+ * jsUnity Universal JavaScript Testing Framework v0.3
  * http://jsunity.com/
  *
  * Copyright (c) 2009 Ates Goral
@@ -10,36 +10,18 @@
 
 (function () {
     var defaultAssertions = {
-        /**
-         * Assert that the given Boolean expression evaluates to
-         * <code>true</code>
-         *
-         * @param expr The Boolean expression
-         */
         assertTrue: function (expr) {
             if (!expr) {
                 throw "Expression does not evaluate to true";
             }
         },
         
-        /**
-         * Assert that the given Boolean expression evaluates to
-         * <code>false</code>
-         *
-         * @param expr The Boolean expression
-         */
         assertFalse: function (expr) {
             if (expr) {
                 throw "Condition does not evaluate to false";
             }
         },
         
-        /**
-         * Assert that the given value matches what's expected
-         *
-         * @param expected The expected value
-         * @param actual The actual given value
-         */
         assertEquals: function (expected, actual) {
             if (expected !== actual) {
                 throw "Actual value does not match what's expected: [expected] "
@@ -47,176 +29,182 @@
             }
         },
         
-        /**
-         * Assert that the given value doesn't match the given unexpected value
-         *
-         * @param unexpected The unexpected value
-         * @param actual The actual given value
-         */
         assertNotEquals: function (unexpected, actual) {
             if (unexpected === actual) {
                 throw "Actual value matches the unexpected value: " + actual;
             }
         },
         
-        /**
-         * Assert that the given object is <code>null</code>
-         *
-         * @param object The given object
-         */
         assertNull: function (object) {
             if (object !== null) {
                 throw "Object is not null";
             }
         },
         
-        /**
-         * Assert that the given object is not <code>null</code>
-         *
-         * @param object The given object
-         */
         assertNotNull: function (object) {
             if (object === null) {
                 throw "Object is null";
             }
         },
         
-        /**
-         * Assert that the given object is <code>undefined</code>
-         *
-         * @param object The given object
-         */
         assertUndefined: function (value) {
             if (value !== undefined) {
                 throw "Value is not undefined";
             }
         },
         
-        /**
-         * Assert that the given object is not <code>undefined</code>
-         *
-         * @param object The given object
-         */
         assertNotUndefined: function (value) {
             if (value === undefined) {
                 throw "Value is undefined";
             }
         },
         
-        /**
-         * Assert that the given object is <code>NaN</code>
-         *
-         * @param object The given object
-         */
         assertNaN: function (value) {
             if (!isNaN(value)) {
                 throw "Value is not NaN";
             }
         },
         
-        /**
-         * Assert that the given object is not <code>NaN</code>
-         *
-         * @param object The given object
-         */
         assertNotNaN: function (value) {
             if (isNaN(value)) {
                 throw "Value is NaN";
             }
         },
         
-        /**
-         * Fail the test by throwing an exception
-         */
         fail: function () {
             throw "Test failed";
         }
     };
 
-    function parseSuiteFunction(suite) {
-        var tokens = /^\s*function\s*([^( \t]*?)\s*\(.*?\)\s*\{((?:[^}]*\}?)+)\}\s*$/.exec(
-            suite.toString().split(/[\r\n]/).join(" "));
-
+    function splitFunction(fn) {
+        var tokens =
+            /^[\s\r\n]*function[\s\r\n]*([^\(\s\r\n]*?)[\s\r\n]*\([^\)\s\r\n]*\)[\s\r\n]*\{((?:[^}]*\}?)+)\}\s*$/
+            .exec(fn);
+        
         if (!tokens) {
             throw "Invalid function.";
         }
-
-        var runnerBody = tokens[2];
-
-        var ret = {
-            runner: new Function(
-                "with (jsUnity.assertions) {"
-                + runnerBody
-                + "} eval(this.fn).call();"),
+        
+        return {
             name: tokens[1],
+            body: tokens[2]
+        };
+    }
+    
+    var probeOutside = function () {
+        return eval(
+            "typeof $fn$ !== \"undefined\" && $fn$ instanceof Function"
+            .split("$fn$")
+            .join(arguments[0]));
+    };
+
+    function parseSuiteString(str) {
+        var suite = {
             tests: []
         };
 
-        var fns = runnerBody.match(/function\s+[^(]+/g);
-
-        if (fns) {
-            for (var i = 0; i < fns.length; i++) {
-                var tokens = /\s(.+)$/.exec(fns[i]);
-
-                if (tokens) {
-                    var name = tokens[1];
-
-                    if (/^test/.test(name)) {
-                        ret.tests.push(name);
-                    } else if (/^setUp|tearDown$/.test(name)) {
-                        ret[name] = true;
+        var probeInside = new Function(
+            splitFunction(probeOutside).body + str);
+        
+        var tokenRe = /(\w+)/g;
+        var tokens;
+        var tests = {};
+        
+        while ((tokens = tokenRe.exec(str))) {
+            var token = tokens[1];
+    
+            try {
+                if (probeInside(token) && !probeOutside(token)) {
+                    if (/^test/.test(token)) {
+                        if (!tests[token]) {
+                            suite.tests.push(token);
+                            tests[token] = true;
+                        }
+                    } else if (/^setUp|tearDown$/.test(token)) {
+                        suite[token] = true;
                     }
+                }
+            } catch (e) {
+                // ignore token
+            }
+        }
+
+        suite.runner = new Function(
+            "with (jsUnity.assertions) {"
+            + str
+            + "}"
+            + "eval(this.fn).call();");
+
+        return suite;
+    }
+
+    function parseSuiteFunction(fn) {
+        var fnParts = splitFunction(fn);
+        var suite = parseSuiteString(fnParts.body);
+
+        suite.name = fnParts.name;
+
+        return suite;
+    }
+
+    // items as strings or functions
+    function parseSuiteArray(tests) {
+        var scope = this;
+
+        var suite = {
+            tests: []
+        };
+        // filter items by probeOutside?
+
+        return {
+            tests: tests,
+            setUp: scope.setUp instanceof Function,
+            tearDown: scope.tearDown instanceof Function,
+            runner: function () { scope[this.fn](); }
+        };
+    }
+
+    function parseSuiteObject(obj) {
+        var tests = [];
+
+        for (var name in obj) {
+            if (obj.hasOwnProperty(name) && obj[name] instanceof Function) {
+                if (/^test/.test(name)) {
+                    tests.push(name);
                 }
             }
         }
 
-        return ret;
+        var suite = parseSuiteArray.call(obj, tests);
+
+        suite.name = obj.name;
+
+        return suite;
     }
 
-    function parseSuiteObject (suite) {
-      var tests = [];
-
-      for(var name in suite){
-        if(suite.hasOwnProperty(name)){
-          if (/^test/.test(name)) {
-                  tests.push(name);
-          }
-        }
-      }
-
-      return {
-        tests: tests,
-        name: suite.name,
-        setUp: !!suite.setUp,
-        tearDown: !!suite.tearDown,
-        runner: function (){ suite[this.fn]() }
-      };
-
-    }
-
-    function parseSuite(suite) {
-        if (suite instanceof Function) {
+    function parseSuite(v) {
+        if (v instanceof Function) {
             // functions inside function
-            return parseSuiteFunction(suite);
-        } else if (suite instanceof Array) {
+            return parseSuiteFunction(v);
+        } else if (v instanceof Array) {
             // array of test function names
-            throw "Not implemented";
-        } else if (suite instanceof Object) {
+            return parseSuiteArray(v);
+        } else if (v instanceof Object) {
             // functions as properties
-            return parseSuiteObject(suite);
-        } else if (typeof suite === "string") {
-            // source code of functions
-            throw "Not implemented";
+            return parseSuiteObject(v);
+        } else if (typeof v === "string") {
+            return parseSuiteString(v);
         } else {
             throw "Must be a function, array, object or string.";
         }
     }
 
     jsUnity = {
+        globalScope: this,
         assertions: defaultAssertions,
         
         attachAssertions: function (scope) {
-            scope = scope || this; // Default to current scope
+            scope = scope || this.globalScope; // Default to global scope
 
             for (var fn in jsUnity.assertions) {
                 scope[fn] = jsUnity.assertions[fn];

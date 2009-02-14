@@ -1,9 +1,4 @@
 function assertionTestSuite() {
-    /**
-     * Assert that the call to the given function results in an exception
-     *
-     * @param fn The function to call
-     */
     function assertException(fn) {
         var fail = false;
 
@@ -19,111 +14,78 @@ function assertionTestSuite() {
         }
     }
 
-    /**
-     * Test the <code>assertTrue()</code> function
-     */
     function testAssertTrue() {
-        assertTrue(true);
+        jsUnity.assertions.assertTrue(true);
 
-        assertException(function () { assertTrue(false); });
+        assertException(function () { jsUnity.assertions.assertTrue(false); });
     }
 
-    /**
-     * Test the <code>assertFalse()</code> function
-     */
     function testAssertFalse() {
-        assertFalse(false);
+        jsUnity.assertions.assertFalse(false);
 
-        assertException(function () { assertFalse(true); });
+        assertException(function () { jsUnity.assertions.assertFalse(true); });
     }
 
-    /**
-     * Test the <code>assertEquals()</code> function
-     */
     function testAssertEquals() {
-        assertEquals(1, 1);
+        jsUnity.assertions.assertEquals(1, 1);
         var n = new Number(5);
-        assertEquals(n, n);
-        assertEquals(undefined, undefined);
+        jsUnity.assertions.assertEquals(n, n);
+        jsUnity.assertions.assertEquals(undefined, undefined);
         
-        assertException(function () { assertEquals("foo", "bar"); });
-        assertException(function () { assertEquals(undefined, new Date()); });
-        assertException(function () { assertEquals([42], undefined); });
+        assertException(function () { jsUnity.assertions.assertEquals("foo", "bar"); });
+        assertException(function () { jsUnity.assertions.assertEquals(undefined, new Date()); });
+        assertException(function () { jsUnity.assertions.assertEquals([42], undefined); });
     }
 
-    /**
-     * Test the <code>assertNotEquals()</code> function
-     */
     function testAssertNotEquals() {
-        assertNotEquals(1, 2);
-        assertNotEquals(new Number(5), new Number(6));
-        assertNotEquals(undefined, "foo");
-        assertNotEquals([42], undefined);
+        jsUnity.assertions.assertNotEquals(1, 2);
+        jsUnity.assertions.assertNotEquals(new Number(5), new Number(6));
+        jsUnity.assertions.assertNotEquals(undefined, "foo");
+        jsUnity.assertions.assertNotEquals([42], undefined);
         
-        assertException(function () { assertNotEquals(1, 1); });
-        assertException(function () { assertNotEquals(undefined, undefined); });
+        assertException(function () { jsUnity.assertions.assertNotEquals(1, 1); });
+        assertException(function () { jsUnity.assertions.assertNotEquals(undefined, undefined); });
     }
 
-    /**
-     * Test the <code>assertNull()</code> function
-     */
     function testAssertNull() {
-        assertNull(null);
+        jsUnity.assertions.assertNull(null);
 
-        assertException(function () { assertNull(5); });
+        assertException(function () { jsUnity.assertions.assertNull(5); });
     }
 
-    /**
-     * Test the <code>assertNotNull()</code> function
-     */
     function testAssertNotNull() {
-        assertNotNull(3);
+        jsUnity.assertions.assertNotNull(3);
 
-        assertException(function () { assertNotNull(null); });
+        assertException(function () { jsUnity.assertions.assertNotNull(null); });
     }
 
-    /**
-     * Test the <code>assertUndefined()</code> function
-     */
     function testAssertUndefined() {
-        assertUndefined(undefined);
+        jsUnity.assertions.assertUndefined(undefined);
 
-        assertException(function () { assertUndefined(5); });
+        assertException(function () { jsUnity.assertions.assertUndefined(5); });
     }
 
-    /**
-     * Test the <code>assertNotUndefined()</code> function
-     */
     function testAssertNotUndefined() {
-        assertNotUndefined(3);
+        jsUnity.assertions.assertNotUndefined(3);
 
-        assertException(function () { assertNotUndefined(undefined); });
+        assertException(function () { jsUnity.assertions.assertNotUndefined(undefined); });
     }
 
-    /**
-     * Test the <code>assertNaN()</code> function
-     */
     function testAssertNaN() {
-        assertNaN(NaN);
+        jsUnity.assertions.assertNaN(NaN);
 
-        assertException(function () { assertNaN(42); });
+        assertException(function () { jsUnity.assertions.assertNaN(42); });
     }
 
-    /**
-     * Test the <code>assertNotNaN()</code> function
-     */
     function testAssertNotNaN() {
-        assertNotNaN(42);
+        jsUnity.assertions.assertNotNaN(42);
 
-        assertException(function () { assertNotNaN(NaN); });
+        assertException(function () { jsUnity.assertions.assertNotNaN(NaN); });
     }
 
-    /**
-     * Test the <code>testFail()</code> function
-     */
     function testFail() {
         var pass = true;
 
-        assertException(function () { fail(); });
+        assertException(function () { jsUnity.assertions.fail(); });
     }
 }
