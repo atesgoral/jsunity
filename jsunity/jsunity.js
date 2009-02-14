@@ -1,6 +1,6 @@
 //<%
 /**
- * jsUnity Universal JavaScript Testing Framework v0.2
+ * jsUnity Universal JavaScript Testing Framework v0.3
  * http://jsunity.com/
  *
  * Copyright (c) 2009 Ates Goral
@@ -76,32 +76,76 @@
         }
     };
 
-    var functionToStringHasComments = /PROBE/.test(function () {/*PROBE*/});
-
-    function parseSuiteFunction(fn) {
-        var s = fn.toString();
-
+    function splitFunction(fn) {
         var tokens =
             /^[\s\r\n]*function[\s\r\n]*([^\(\s\r\n]*?)[\s\r\n]*\([^\)\s\r\n]*\)[\s\r\n]*\{((?:[^}]*\}?)+)\}\s*$/
-            .exec(s);
+            .exec(fn);
         
         if (!tokens) {
             throw "Invalid function.";
         }
+        
+        return {
+            name: tokens[1],
+            body: tokens[2]
+        };
+    }
+    
+    var probeOutside = function () {
+        return eval(
+            "typeof $fn$ !== \"undefined\" && $fn$ instanceof Function"
+            .split("$fn$")
+            .join(arguments[0]));
+    };
 
-        var suite = parseSuiteString(tokens[2]);
+    function parseSuiteString(str) {
+        var suite = {
+            tests: []
+        };
 
-        suite.name = tokens[1];
+        var probeInside = new Function(
+            splitFunction(probeOutside).body + str);
+        
+        var tokenRe = /(\w+)/g;
+        var tokens;
+        var tests = {};
+        
+        while ((tokens = tokenRe.exec(str))) {
+            var token = tokens[1];
+    
+            try {
+                if (probeInside(token) && !probeOutside(token)) {
+                    jsUnity.log("token: " + token);
+                    if (/^test/.test(token)) {
+                        if (!tests[token]) {
+                            suite.tests.push(token);
+                            tests[token] = true;
+                        }
+                    } else if (/^setUp|tearDown$/.test(token)) {
+                        suite[token] = true;
+                    }
+                }
+            } catch (e) {
+                // ignore token
+            }
+        }
+
+        suite.runner = new Function(
+            "with (jsUnity.assertions) {"
+            + str
+            + "}"
+            + "eval(this.fn).call();");
 
         return suite;
     }
-    
-    function $isNameFunctionTmp() {
-        return typeof $name$ !== "undefined" && $name$ instanceof Function;
-    }
 
-    function isNameFunction(name) {
-        eval($isNameFunctionTmp.toString().split("$name$").join(name))();
+    function parseSuiteFunction(fn) {
+        var fnParts = splitFunction(fn);
+        var suite = parseSuiteString(fnParts.body);
+
+        suite.name = fnParts.name;
+
+        return suite;
     }
 
     // items as strings or functions
@@ -111,7 +155,7 @@
         var suite = {
             tests: []
         };
-        // filter items by isNameFunction
+        // filter items by probeOutside?
 
         return {
             tests: tests,
@@ -135,33 +179,6 @@
         var suite = parseSuiteArray.call(obj, tests);
 
         suite.name = obj.name;
-
-        return suite;
-    }
-
-    function parseSuiteString(str) {
-        var suite = {
-            tests: []
-        };
-
-        var fns = str.match(/function[\s\r\n]+[^(]+/g);
-
-        if (fns) {
-            for (var i = 0; i < fns.length; i++) {
-                var name = fns[i].split(/function[\s\r\n]+/)[1];
-
-                if (/^test/.test(name)) {
-                    suite.tests.push(name);
-                } else if (/^setUp|tearDown$/.test(name)) {
-                    suite[name] = true;
-                }
-            }
-        }
-
-        suite.runner = new Function(
-            "with (jsUnity.assertions) {"
-            + str
-            + "} if (eval(this.fn).call();");
 
         return suite;
     }

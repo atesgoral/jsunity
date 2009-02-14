@@ -1,5 +1,5 @@
-function setUp() {}
-function tearDown() {}
+//function setUp() {}
+//function tearDown() {}
 function testArrayPass1() {}
 function testArrayPass2() {}
 function testArrayFail() { throw "fail"; }

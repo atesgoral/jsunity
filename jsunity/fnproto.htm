@@ -66,4 +66,18 @@ function extractFunctions(fn) {
 }
 
 document.write(extractFunctions(testSuite));
+
+function probeWith() {
+    var a = { b: 0 };
+    
+    with (a) {
+        function probe() {
+            return typeof b;
+        }
+    };
+    
+    return probe() != "undefined";
+}
+
+document.write(probeWith());
 </script> 
