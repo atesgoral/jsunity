@@ -1,6 +1,6 @@
 //<%
 /**
- * jsUnity Universal JavaScript Testing Framework v0.3
+ * jsUnity Universal JavaScript Testing Framework v0.4
  * http://jsunity.com/
  *
  * Copyright (c) 2009 Ates Goral
