@@ -13,7 +13,7 @@ function checkAssertions(scope) {
 function jsUnityTestSuite() {
     function setUp() {
         origLog = jsUnity.log;
-        jsUnity.log = function () {};
+        jsUnity.log = function () { /*origLog("    " + arguments[0]);*/ };
     }
 
     function tearDown() {
@@ -59,7 +59,10 @@ function jsUnityTestSuite() {
 
         jsUnity.assertions.assertTrue(Boolean(results));
         jsUnity.assertions.assertEquals(
-            "0 tests found\n0 tests passed\n0 tests failed",
+            "Running unnamed test suite\n"
+            + "0 tests found\n"
+            + "0 tests passed\n"
+            + "0 tests failed",
             logStrs.join("\n"));
     }
 
@@ -103,7 +106,7 @@ function jsUnityTestSuite() {
         }
         
         var results = jsUnity.run(namedTestSuite);
-        jsUnity.assertions.assertEquals("namedTestSuite", results.name);
+        jsUnity.assertions.assertEquals("namedTestSuite", results.suiteName);
         jsUnity.assertions.assertEquals(3, results.total);
         jsUnity.assertions.assertEquals(2, results.passed);
         jsUnity.assertions.assertEquals(1, results.failed);
@@ -139,7 +142,7 @@ function jsUnityTestSuite() {
 
     function testRunObject() {
         var objectTestSuite = {
-            name: "objectTestSuite",
+            suiteName: "objectTestSuite",
             setUp: function () {},
             tearDown: function () {},
             testObjectPass1: function () {},
@@ -148,7 +151,7 @@ function jsUnityTestSuite() {
         };
 
         var results = jsUnity.run(objectTestSuite);
-        jsUnity.assertions.assertEquals("objectTestSuite", results.name);
+        jsUnity.assertions.assertEquals("objectTestSuite", results.suiteName);
         jsUnity.assertions.assertEquals(3, results.total);
         jsUnity.assertions.assertEquals(2, results.passed);
         jsUnity.assertions.assertEquals(1, results.failed);

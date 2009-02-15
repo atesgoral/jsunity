@@ -1,3 +1,9 @@
+  - Removed the need for runner functions
+  - Rewired suite type handling
+  - Added probing to array suites
+  - Array suites now support both strings and functions as items
+  - Renamed results.name to results.suiteName
+
 0.3
   - Improved function parser to handle nested functions and comments
   - Enabled all suite types

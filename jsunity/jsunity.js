@@ -78,7 +78,7 @@
 
     function splitFunction(fn) {
         var tokens =
-            /^[\s\r\n]*function[\s\r\n]*([^\(\s\r\n]*?)[\s\r\n]*\([^\)\s\r\n]*\)[\s\r\n]*\{((?:[^}]*\}?)+)\}\s*$/
+            /^[\s\r\n]*function[\s\r\n]*([^\(\s\r\n]*?)[\s\r\n]*\([^\)\s\r\n]*\)[\s\r\n]*\{((?:[^}]*\}?)+)\}[\s\r\n]*$/
             .exec(fn);
         
         if (!tokens) {
@@ -92,105 +92,99 @@
     }
     
     var probeOutside = function () {
-        return eval(
-            "typeof $fn$ !== \"undefined\" && $fn$ instanceof Function"
-            .split("$fn$")
-            .join(arguments[0]));
+        try {
+            return eval(
+                [ "typeof ", " === \"function\" && ", "" ].join(arguments[0]));
+        } catch (e) {
+            return false;
+        }
     };
 
     function parseSuiteString(str) {
-        var suite = {
-            tests: []
-        };
+        var obj = {};
 
         var probeInside = new Function(
             splitFunction(probeOutside).body + str);
         
-        var tokenRe = /(\w+)/g;
+        var tokenRe = /(\w+)/g; // todo: wiser regex
         var tokens;
-        var tests = {};
         
         while ((tokens = tokenRe.exec(str))) {
             var token = tokens[1];
+            var fn;
     
-            try {
-                if (probeInside(token) && !probeOutside(token)) {
-                    if (/^test/.test(token)) {
-                        if (!tests[token]) {
-                            suite.tests.push(token);
-                            tests[token] = true;
-                        }
-                    } else if (/^setUp|tearDown$/.test(token)) {
-                        suite[token] = true;
-                    }
-                }
-            } catch (e) {
-                // ignore token
+            if (!obj[token]
+                && (fn = probeInside(token))
+                && !probeOutside(token)) {
+                    
+                obj[token] = fn;
             }
         }
 
-        suite.runner = new Function(
-            "with (jsUnity.assertions) {"
-            + str
-            + "}"
-            + "eval(this.fn).call();");
-
-        return suite;
+        return parseSuiteObject(obj);
     }
 
     function parseSuiteFunction(fn) {
         var fnParts = splitFunction(fn);
         var suite = parseSuiteString(fnParts.body);
 
-        suite.name = fnParts.name;
+        suite.suiteName = fnParts.name;
 
         return suite;
     }
 
-    // items as strings or functions
     function parseSuiteArray(tests) {
-        var scope = this;
+        var obj = {};
 
-        var suite = {
-            tests: []
-        };
-        // filter items by probeOutside?
-
-        return {
-            tests: tests,
-            setUp: scope.setUp instanceof Function,
-            tearDown: scope.tearDown instanceof Function,
-            runner: function () { scope[this.fn](); }
-        };
-    }
-
-    function parseSuiteObject(obj) {
-        var tests = [];
-
-        for (var name in obj) {
-            if (obj.hasOwnProperty(name) && obj[name] instanceof Function) {
-                if (/^test/.test(name)) {
-                    tests.push(name);
+        for (var i = 0; i < tests.length; i++) {
+            var item = tests[i];
+            
+            if (!obj[item]) {
+                switch (typeof item) {
+                case "function":
+                    var fnParts = splitFunction(item);
+                    obj[fnParts.name] = item;
+                    break;
+                case "string":
+                    var fn;
+                    
+                    if (fn = probeOutside(item)) {
+                        obj[item] = fn;
+                    }
                 }
             }
         }
 
-        var suite = parseSuiteArray.call(obj, tests);
+        return parseSuiteObject(obj);
+    }
 
-        suite.name = obj.name;
+    function parseSuiteObject(obj) {
+        var suite = {
+            suiteName: obj.suiteName,
+            tests: []
+        };
 
+        for (var name in obj) {
+            var fn = obj[name];
+            
+            if (obj.hasOwnProperty(name) && typeof fn === "function") {
+                if (/^test/.test(name)) {
+                    suite.tests.push({ name: name, fn: fn });
+                } else if (/^setUp|tearDown$/.test(name)) {
+                    suite[name] = fn;
+                }
+            }
+        }
+        
         return suite;
     }
 
     function parseSuite(v) {
         if (v instanceof Function) {
-            // functions inside function
             return parseSuiteFunction(v);
         } else if (v instanceof Array) {
-            // array of test function names
             return parseSuiteArray(v);
         } else if (v instanceof Object) {
-            // functions as properties
             return parseSuiteObject(v);
         } else if (typeof v === "string") {
             return parseSuiteString(v);
@@ -204,7 +198,7 @@
         assertions: defaultAssertions,
         
         attachAssertions: function (scope) {
-            scope = scope || this.globalScope; // Default to global scope
+            scope = scope || this.globalScope;
 
             for (var fn in jsUnity.assertions) {
                 scope[fn] = jsUnity.assertions[fn];
@@ -226,26 +220,21 @@
             var total = suite.tests.length;
             var passed = 0;
 
+            this.log("Running " + (suite.suiteName || "unnamed test suite"));
             this.log(total + " tests found");
 
             for (var i = 0; i < total; i++) {
                 var test = suite.tests[i];
 
                 try {
-                    if (suite.setUp) {
-                        suite.runner.call({ fn: "setUp" });
-                    }
-                    suite.runner.call({ fn: test });
-                    if (suite.tearDown) {
-                        suite.runner.call({ fn: "tearDown" });
-                    }
+                    suite.setUp && suite.setUp();
+                    test.fn();
+                    suite.tearDown && suite.tearDown();
                     passed++;
-                    this.log("[PASSED] " + test);
+                    this.log("[PASSED] " + test.name);
                 } catch (e) {
-                    if (suite.tearDown) {
-                        suite.runner.call({ fn: "tearDown" });
-                    }
-                    this.log("[FAILED] " + test + ": " + e);
+                    suite.tearDown && suite.tearDown();
+                    this.log("[FAILED] " + test.name + ": " + e);
                 }
             }
 
@@ -255,7 +244,7 @@
             this.log(failed + " tests failed");
 
             return {
-                name: suite.name,
+                suiteName: suite.suiteName,
                 total: total,
                 passed: passed,
                 failed: failed
