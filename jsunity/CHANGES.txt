@@ -1,4 +1,5 @@
 0.4
+  - Fixed jsUnity assignment method to make JScript happy
   - Removed the need for runner functions
   - Rewired suite type handling
   - Added probing to array suites

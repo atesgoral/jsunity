@@ -8,7 +8,7 @@
  * http://www.opensource.org/licenses/mit-license.php
  */
 
-(function () {
+jsUnity = (function () {
     var defaultAssertions = {
         assertTrue: function (expr) {
             if (!expr) {
@@ -193,7 +193,7 @@
         }
     }
 
-    jsUnity = {
+    return {
         globalScope: this,
         assertions: defaultAssertions,
         
