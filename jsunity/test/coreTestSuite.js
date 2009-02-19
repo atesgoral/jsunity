@@ -10,7 +10,7 @@ function checkAssertions(scope) {
     }
 }
 
-function jsUnityTestSuite() {
+function coreTestSuite() {
     function setUp() {
         origLog = jsUnity.log;
         jsUnity.log = function () { /*origLog("    " + arguments[0]);*/ };
@@ -86,8 +86,14 @@ function jsUnityTestSuite() {
     }
 
     function testAttachAssertionsDefaultScope() {
+        var scope = {};
+        var hijacked = jsUnity.defaultScope;
+
+        jsUnity.defaultScope = scope;
         jsUnity.attachAssertions();
-        checkAssertions(window);
+        jsUnity.defaultScope = hijacked;
+        
+        checkAssertions(scope);        
     }
 
     function testAttachAssertionsGivenScope() {

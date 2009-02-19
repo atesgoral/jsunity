@@ -1,3 +1,7 @@
+  - Made test runners proper HTML
+  - run() now can take multiple test suites as arguments
+  - Renamed globalScope to defaultScope
+
 0.4
   - Fixed jsUnity assignment method to make JScript happy
   - Removed the need for runner functions

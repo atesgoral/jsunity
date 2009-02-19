@@ -75,6 +75,10 @@ jsUnity = (function () {
             throw "Test failed";
         }
     };
+    
+    function plural(cnt, unit) {
+        return cnt + " " + unit + (unit == 1 ? "" : "s");
+    }
 
     function splitFunction(fn) {
         var tokens =
@@ -194,11 +198,11 @@ jsUnity = (function () {
     }
 
     return {
-        globalScope: this,
+        defaultScope: this,
         assertions: defaultAssertions,
         
         attachAssertions: function (scope) {
-            scope = scope || this.globalScope;
+            scope = scope || this.defaultScope;
 
             for (var fn in jsUnity.assertions) {
                 scope[fn] = jsUnity.assertions[fn];
@@ -210,45 +214,56 @@ jsUnity = (function () {
         error: function (s) { this.log("[ERROR] " + s); },
 
         run: function () {
-            try {
-                var suite = parseSuite(arguments[0]);
-            } catch (e) {
-                this.error("Invalid test suite: " + e);
-                return false;
-            }
+            var results = {
+                total: 0,
+                passed: 0
+            };
 
-            var total = suite.tests.length;
-            var passed = 0;
+            var suiteNames = [];
 
-            this.log("Running " + (suite.suiteName || "unnamed test suite"));
-            this.log(total + " tests found");
-
-            for (var i = 0; i < total; i++) {
-                var test = suite.tests[i];
-
+            for (var i = 0; i < arguments.length; i++) {
                 try {
-                    suite.setUp && suite.setUp();
-                    test.fn();
-                    suite.tearDown && suite.tearDown();
-                    passed++;
-                    this.log("[PASSED] " + test.name);
+                    var suite = parseSuite(arguments[i]);
                 } catch (e) {
-                    suite.tearDown && suite.tearDown();
-                    this.log("[FAILED] " + test.name + ": " + e);
+                    this.error("Invalid test suite: " + e);
+                    return false;
+                }
+
+                var cnt = suite.tests.length;
+
+                this.log("Running "
+                    + (suite.suiteName || "unnamed test suite"));
+                this.log(plural(cnt, "test") + " found");
+    
+                suiteNames.push(suite.suiteName);
+                results.total += cnt;
+
+                for (var j = 0; j < cnt; j++) {
+                    var test = suite.tests[j];
+    
+                    try {
+                        suite.setUp && suite.setUp();
+                        test.fn();
+                        suite.tearDown && suite.tearDown();
+
+                        results.passed++;
+
+                        this.log("[PASSED] " + test.name);
+                    } catch (e) {
+                        suite.tearDown && suite.tearDown();
+
+                        this.log("[FAILED] " + test.name + ": " + e);
+                    }
                 }
             }
 
-            var failed = total - passed;
+            results.suiteName = suiteNames.toString();
+            results.failed = results.total - results.passed;
 
-            this.log(passed + " tests passed");
-            this.log(failed + " tests failed");
+            this.log(plural(results.passed, "test") + " passed");
+            this.log(plural(results.failed, "test") + " failed");
 
-            return {
-                suiteName: suite.suiteName,
-                total: total,
-                passed: passed,
-                failed: failed
-            }
+            return results;
         }
     };
 })();
