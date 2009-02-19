@@ -77,7 +77,7 @@ jsUnity = (function () {
     };
     
     function plural(cnt, unit) {
-        return cnt + " " + unit + (unit == 1 ? "" : "s");
+        return cnt + " " + unit + (cnt == 1 ? "" : "s");
     }
 
     function splitFunction(fn) {

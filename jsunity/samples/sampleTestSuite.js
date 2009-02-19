@@ -9,11 +9,11 @@ function sampleTestSuite() {
     }
 
     function testLessThan() {
-        assertTrue(1 < 2);
+        jsUnity.assertions.assertTrue(1 < 2);
     }
     
     function testPi() {
-        assertEquals(Math.PI, 22 / 7);
+        jsUnity.assertions.assertEquals(Math.PI, 22 / 7);
     }
 }
 //%>
