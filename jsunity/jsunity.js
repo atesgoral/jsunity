@@ -220,6 +220,7 @@ jsUnity = (function () {
             };
 
             var suiteNames = [];
+            var start = new Date();
 
             for (var i = 0; i < arguments.length; i++) {
                 try {
@@ -259,9 +260,11 @@ jsUnity = (function () {
 
             results.suiteName = suiteNames.toString();
             results.failed = results.total - results.passed;
+            results.duration = new Date() - start;
 
             this.log(plural(results.passed, "test") + " passed");
             this.log(plural(results.failed, "test") + " failed");
+            this.log(plural(results.duration, "millisecond") + " elapsed");
 
             return results;
         }

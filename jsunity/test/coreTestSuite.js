@@ -62,7 +62,8 @@ function coreTestSuite() {
             "Running unnamed test suite\n"
             + "0 tests found\n"
             + "0 tests passed\n"
-            + "0 tests failed",
+            + "0 tests failed\n"
+            + "0 milliseconds elapsed", // leap of faith!
             logStrs.join("\n"));
     }
 

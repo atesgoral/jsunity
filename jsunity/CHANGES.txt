@@ -1,3 +1,4 @@
+  - Added results.duration
   - Proper plural/singular count messages
   - Made test runners proper HTML
   - run() now can take multiple test suites as arguments
