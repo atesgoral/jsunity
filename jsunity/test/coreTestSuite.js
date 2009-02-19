@@ -103,9 +103,12 @@ function coreTestSuite() {
     }
 
     function testRunFunctionNamed() {
+        setUps = 0;
+        tearDowns = 0;
+
         function namedTestSuite() {
-            function setUp() {}
-            function tearDown() {}
+            function setUp() { setUps++; }
+            function tearDown() { tearDowns++; }
             function testNamedPass1() {}
             function testNamedPass2() {}
             function testNamedFail() { throw "fail"; }
@@ -116,12 +119,18 @@ function coreTestSuite() {
         jsUnity.assertions.assertEquals(3, results.total);
         jsUnity.assertions.assertEquals(2, results.passed);
         jsUnity.assertions.assertEquals(1, results.failed);
+
+        jsUnity.assertions.assertEquals(3, setUps);
+        jsUnity.assertions.assertEquals(3, tearDowns);
     }
 
     function testRunFunctionAnonymous() {
+        setUps = 0;
+        tearDowns = 0;
+
         var anonymousTestSuite = function () {
-            function setUp() {}
-            function tearDown() {}
+            function setUp() { setUps++; }
+            function tearDown() { tearDowns++; }
             function testAnonymousPass1() {}
             function testAnonymousPass2() {}
             function testAnonymousFail() { throw "fail"; }
@@ -131,9 +140,15 @@ function coreTestSuite() {
         jsUnity.assertions.assertEquals(3, results.total);
         jsUnity.assertions.assertEquals(2, results.passed);
         jsUnity.assertions.assertEquals(1, results.failed);
+
+        jsUnity.assertions.assertEquals(3, setUps);
+        jsUnity.assertions.assertEquals(3, tearDowns);
     }
 
     function testRunArray() {
+        setUps = 0;
+        tearDowns = 0;
+
         var arrayTestSuite = [
             "testArrayPass1",
             "testArrayPass2",
@@ -144,13 +159,19 @@ function coreTestSuite() {
         jsUnity.assertions.assertEquals(3, results.total);
         jsUnity.assertions.assertEquals(2, results.passed);
         jsUnity.assertions.assertEquals(1, results.failed);
+
+        jsUnity.assertions.assertEquals(0, setUps);
+        jsUnity.assertions.assertEquals(0, tearDowns);
     }
 
     function testRunObject() {
+        setUps = 0;
+        tearDowns = 0;
+
         var objectTestSuite = {
             suiteName: "objectTestSuite",
-            setUp: function () {},
-            tearDown: function () {},
+            setUp: function () { setUps++; },
+            tearDown: function () { tearDowns++; },
             testObjectPass1: function () {},
             testObjectPass2: function () {},
             testObjectFail: function () { throw "fail"; }
@@ -161,12 +182,18 @@ function coreTestSuite() {
         jsUnity.assertions.assertEquals(3, results.total);
         jsUnity.assertions.assertEquals(2, results.passed);
         jsUnity.assertions.assertEquals(1, results.failed);
+
+        jsUnity.assertions.assertEquals(3, setUps);
+        jsUnity.assertions.assertEquals(3, tearDowns);
     }
 
     function testRunString() {
+        setUps = 0;
+        tearDowns = 0;
+
         var stringTestSuite = "\
-                function setUp() {}\
-                function tearDown() {}\
+                function setUp() { setUps++; }\
+                function tearDown() { tearDowns++; }\
                 function testStringPass1() {}\
                 function testStringPass2() {}\
                 function testStringFail() { throw \"fail\"; }\
@@ -176,9 +203,33 @@ function coreTestSuite() {
         jsUnity.assertions.assertEquals(3, results.total);
         jsUnity.assertions.assertEquals(2, results.passed);
         jsUnity.assertions.assertEquals(1, results.failed);
+
+        jsUnity.assertions.assertEquals(3, setUps);
+        jsUnity.assertions.assertEquals(3, tearDowns);
     }
 
     function testRunNumber() {
         jsUnity.assertions.assertFalse(jsUnity.run(42));
+    }
+    
+    function testRunMultiple() {
+        function namedTestSuite1() {
+            function testThatPasses() {}
+        }
+        
+        function namedTestSuite2() {
+            function testThatFails() { jsUnity.assertions.fail(); }
+        }
+        
+        var anonymousTestSuite = function () {
+        }
+
+        var results = jsUnity.run(
+            namedTestSuite1, namedTestSuite2, anonymousTestSuite);
+        jsUnity.assertions.assertEquals("namedTestSuite1,namedTestSuite2,",
+            results.suiteName);
+        jsUnity.assertions.assertEquals(2, results.total);
+        jsUnity.assertions.assertEquals(1, results.passed);
+        jsUnity.assertions.assertEquals(1, results.failed);
     }
 }
