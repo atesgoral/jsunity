@@ -1,3 +1,4 @@
+  - Added jsUnity.env that contains defaultScope and getDate
   - Added results.duration
   - Proper plural/singular count messages
   - Made test runners proper HTML

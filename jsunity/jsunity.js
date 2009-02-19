@@ -198,11 +198,18 @@ jsUnity = (function () {
     }
 
     return {
-        defaultScope: this,
         assertions: defaultAssertions,
+
+        env: {
+            defaultScope: this,
+
+            getDate: function () {
+                return new Date();
+            }
+        },
         
         attachAssertions: function (scope) {
-            scope = scope || this.defaultScope;
+            scope = scope || this.env.defaultScope;
 
             for (var fn in jsUnity.assertions) {
                 scope[fn] = jsUnity.assertions[fn];
@@ -220,7 +227,7 @@ jsUnity = (function () {
             };
 
             var suiteNames = [];
-            var start = new Date();
+            var start = jsUnity.env.getDate();
 
             for (var i = 0; i < arguments.length; i++) {
                 try {
@@ -260,7 +267,7 @@ jsUnity = (function () {
 
             results.suiteName = suiteNames.toString();
             results.failed = results.total - results.passed;
-            results.duration = new Date() - start;
+            results.duration = jsUnity.env.getDate() - start;
 
             this.log(plural(results.passed, "test") + " passed");
             this.log(plural(results.failed, "test") + " failed");

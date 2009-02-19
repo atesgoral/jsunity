@@ -45,7 +45,8 @@ function coreTestSuite() {
     }
 
     function testLog() {
-        var hijacked = jsUnity.log;
+        var hijackedLog = jsUnity.log;
+        var hijackedGetDate = jsUnity.env.getDate;
 
         var logStrs = [];
         
@@ -53,9 +54,14 @@ function coreTestSuite() {
             logStrs.push(s);
         };
         
+        jsUnity.env.getDate = function () {
+            return 0;
+        };
+        
         var results = jsUnity.run(function () {});
 
-        jsUnity.log = hijacked;
+        jsUnity.log = hijackedLog;
+        jsUnity.env.getDate = hijackedGetDate;
 
         jsUnity.assertions.assertTrue(Boolean(results));
         jsUnity.assertions.assertEquals(
@@ -68,7 +74,7 @@ function coreTestSuite() {
     }
 
     function testError() {
-        var hijacked = jsUnity.error;
+        var hijackedError = jsUnity.error;
 
         var errorStr;
         
@@ -78,7 +84,7 @@ function coreTestSuite() {
         
         var results = jsUnity.run(false);
 
-        jsUnity.error = hijacked;
+        jsUnity.error = hijackedError;
 
         jsUnity.assertions.assertFalse(results);
         jsUnity.assertions.assertEquals("Invalid test suite: "
@@ -88,11 +94,11 @@ function coreTestSuite() {
 
     function testAttachAssertionsDefaultScope() {
         var scope = {};
-        var hijacked = jsUnity.defaultScope;
+        var hijackedScope = jsUnity.env.defaultScope;
 
-        jsUnity.defaultScope = scope;
+        jsUnity.env.defaultScope = scope;
         jsUnity.attachAssertions();
-        jsUnity.defaultScope = hijacked;
+        jsUnity.env.defaultScope = hijackedScope;
         
         checkAssertions(scope);        
     }
