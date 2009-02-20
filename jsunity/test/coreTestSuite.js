@@ -12,7 +12,7 @@ function checkAssertions(scope) {
 function coreTestSuite() {
     function setUp() {
         origLog = jsUnity.log;
-        jsUnity.log = function () { /*origLog("    " + arguments[0]);*/ };
+        jsUnity.log = function () {};
     }
 
     function tearDown() {
@@ -68,7 +68,7 @@ function coreTestSuite() {
             + "0 tests found\n"
             + "0 tests passed\n"
             + "0 tests failed\n"
-            + "0 milliseconds elapsed", // leap of faith!
+            + "0 milliseconds elapsed",
             logStrs.join("\n"));
     }
 
