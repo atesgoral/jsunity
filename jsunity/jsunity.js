@@ -265,7 +265,7 @@ jsUnity = (function () {
                 }
             }
 
-            results.suiteName = suiteNames.toString();
+            results.suiteName = suiteNames.join(",");
             results.failed = results.total - results.passed;
             results.duration = jsUnity.env.getDate() - start;
 

@@ -1,3 +1,5 @@
+  - Fixed multiple test suite name concatenation to work with AppJet
+
 0.5
   - Added jsUnity.env that contains defaultScope and getDate
   - Added results.duration
