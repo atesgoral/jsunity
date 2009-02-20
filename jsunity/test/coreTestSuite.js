@@ -1,5 +1,4 @@
-//function setUp() {}
-//function tearDown() {}
+//<%
 function testArrayPass1() {}
 function testArrayPass2() {}
 function testArrayFail() { throw "fail"; }
@@ -240,3 +239,4 @@ function coreTestSuite() {
         jsUnity.assertions.assertEquals(1, results.failed);
     }
 }
+//%>

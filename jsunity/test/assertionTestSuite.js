@@ -1,3 +1,4 @@
+//<%
 function assertionTestSuite() {
     function assertException(fn) {
         var fail = false;
@@ -89,3 +90,4 @@ function assertionTestSuite() {
         assertException(function () { jsUnity.assertions.fail(); });
     }
 }
+//%>
