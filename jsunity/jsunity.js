@@ -251,7 +251,7 @@ jsUnity = (function () {
     
                     try {
                         suite.setUp && suite.setUp();
-                        test.fn();
+                        test.fn.call(suite);
                         suite.tearDown && suite.tearDown();
 
                         results.passed++;
