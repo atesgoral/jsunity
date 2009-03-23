@@ -1,3 +1,4 @@
+  - Test cases are run within the scope of the test suite (as "this")
   - Fixed multiple test suite name concatenation to work with AppJet
 
 0.5
