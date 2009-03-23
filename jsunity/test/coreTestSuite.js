@@ -238,5 +238,15 @@ function coreTestSuite() {
         jsUnity.assertions.assertEquals(1, results.passed);
         jsUnity.assertions.assertEquals(1, results.failed);
     }
+    
+    function testRunBindsTestSuiteAsTestScope() {
+        jsUnity.run({
+            marker: true,
+            
+            testMarker: function () {
+                assertTrue(this.marker);
+            }
+        });
+    }
 }
 //%>
