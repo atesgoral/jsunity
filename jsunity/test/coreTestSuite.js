@@ -1,7 +1,14 @@
 //<%
-function testArrayPass1() {}
-function testArrayPass2() {}
-function testArrayFail() { throw "fail"; }
+function setUp() { setUps++; }
+function tearDown() { tearDowns++; }
+function testGlobalPass1() {}
+function testGlobalPass2() {}
+function testGlobalFail() { throw "fail"; }
+
+var global = {
+    setUp: setUp,
+    tearDown: tearDown
+};
 
 function checkAssertions(scope) {
     for (var fn in jsUnity.assertions) {
@@ -10,6 +17,17 @@ function checkAssertions(scope) {
 }
 
 function coreTestSuite() {
+    function checkResults(results, suiteName) {
+        jsUnity.assertions.assertTrue(results instanceof jsUnity.TestResults);
+        jsUnity.assertions.assertEquals(suiteName || "", results.suiteName);
+        jsUnity.assertions.assertEquals(3, results.total);
+        jsUnity.assertions.assertEquals(2, results.passed);
+        jsUnity.assertions.assertEquals(1, results.failed);
+
+        jsUnity.assertions.assertEquals(3, setUps);
+        jsUnity.assertions.assertEquals(3, tearDowns);
+    }
+
     function setUp() {
         origLog = jsUnity.log;
         jsUnity.log = function () {};
@@ -86,9 +104,7 @@ function coreTestSuite() {
         jsUnity.error = hijackedError;
 
         jsUnity.assertions.assertFalse(results);
-        jsUnity.assertions.assertEquals("Invalid test suite: "
-            + "Must be a function, array, object or string.",
-            errorStr);
+        jsUnity.assertions.assertTrue(errorStr.length > 0);
     }
 
     function testAttachAssertionsDefaultScope() {
@@ -108,7 +124,182 @@ function coreTestSuite() {
         checkAssertions(scope);
     }
 
-    function testRunFunctionNamed() {
+    function testCompileTestSuite() {
+        var scope = {};
+        function testDummy() {}
+        
+        var origTestSuite = new jsUnity.TestSuite("TestSuite", scope);
+        origTestSuite.setUp = global.setUp;
+        origTestSuite.tearDown = global.tearDown;
+        origTestSuite.tests.push({ name: "testDummy", fn: testDummy });
+        
+        var testSuite = jsUnity.compile(origTestSuite);
+        
+        jsUnity.assertions.assertTrue(testSuite instanceof jsUnity.TestSuite);
+        jsUnity.assertions.assertEquals("TestSuite", testSuite.suiteName);
+        jsUnity.assertions.assertEquals(scope, testSuite.scope);
+        jsUnity.assertions.assertEquals(global.setUp, testSuite.setUp);
+        jsUnity.assertions.assertEquals(global.tearDown, testSuite.tearDown);
+        jsUnity.assertions.assertEquals("testDummy", testSuite.tests[0].name);
+        jsUnity.assertions.assertEquals(testDummy, testSuite.tests[0].fn);
+    }
+
+    function testCompileNamedFunction() {
+        function namedTestSuite() {
+            function setUp() { return 1; }
+            function tearDown() { return 2; }
+            function testDummy() { return 3; }
+            
+            return {
+                setUp: setUp,
+                tearDown: tearDown,
+                testDummy: testDummy
+            };
+        }
+        
+        var internals = namedTestSuite();
+        var testSuite = jsUnity.compile(namedTestSuite);
+
+        jsUnity.assertions.assertTrue(testSuite instanceof jsUnity.TestSuite);
+        jsUnity.assertions.assertEquals("namedTestSuite", testSuite.suiteName);
+        jsUnity.assertions.assertEquals("object", typeof testSuite.scope);
+        jsUnity.assertions.assertEquals(internals.setUp.toString(),
+            testSuite.setUp.toString());
+        jsUnity.assertions.assertEquals(internals.tearDown.toString(),
+            testSuite.tearDown.toString());
+        jsUnity.assertions.assertEquals("testDummy",
+            testSuite.tests[0].name);
+        jsUnity.assertions.assertEquals(internals.testDummy.toString(),
+            testSuite.tests[0].fn.toString());
+    }
+
+    function testCompileAnonymousFunction() {
+        var anonymousTestSuite = function () {
+            function setUp() { return 1; }
+            function tearDown() { return 2; }
+            function testDummy() { return 3; }
+            
+            return {
+                setUp: setUp,
+                tearDown: tearDown,
+                testDummy: testDummy
+            };
+        };
+        
+        var internals = anonymousTestSuite();
+        var testSuite = jsUnity.compile(anonymousTestSuite);
+
+        jsUnity.assertions.assertTrue(testSuite instanceof jsUnity.TestSuite);
+        jsUnity.assertions.assertUndefined(testSuite.suiteName);
+        jsUnity.assertions.assertEquals("object", typeof testSuite.scope);
+        jsUnity.assertions.assertEquals(internals.setUp.toString(),
+            testSuite.setUp.toString());
+        jsUnity.assertions.assertEquals(internals.tearDown.toString(),
+            testSuite.tearDown.toString());
+        jsUnity.assertions.assertEquals("testDummy",
+            testSuite.tests[0].name);
+        jsUnity.assertions.assertEquals(internals.testDummy.toString(),
+            testSuite.tests[0].fn.toString());
+    }
+
+    function testCompileArrayOfFunctions() {
+        var arrayTestSuite = [
+            global.setUp,
+            global.tearDown,
+            testGlobalPass1
+        ];
+
+        var testSuite = jsUnity.compile(arrayTestSuite);
+
+        jsUnity.assertions.assertTrue(testSuite instanceof jsUnity.TestSuite);
+        jsUnity.assertions.assertUndefined(testSuite.suiteName);
+        jsUnity.assertions.assertEquals("object", typeof testSuite.scope);
+        jsUnity.assertions.assertEquals(global.setUp, testSuite.setUp);
+        jsUnity.assertions.assertEquals(global.tearDown, testSuite.tearDown);
+        jsUnity.assertions.assertEquals("testGlobalPass1", testSuite.tests[0].name);
+        jsUnity.assertions.assertEquals(testGlobalPass1, testSuite.tests[0].fn);
+    }
+
+    function testCompileArrayOfStrings() {
+        var arrayTestSuite = [
+            "setUp",
+            "tearDown",
+            "testGlobalPass1"
+        ];
+
+        var testSuite = jsUnity.compile(arrayTestSuite);
+
+        jsUnity.assertions.assertTrue(testSuite instanceof jsUnity.TestSuite);
+        jsUnity.assertions.assertUndefined(testSuite.suiteName);
+        jsUnity.assertions.assertEquals("object", typeof testSuite.scope);
+        jsUnity.assertions.assertEquals(global.setUp, testSuite.setUp);
+        jsUnity.assertions.assertEquals(global.tearDown, testSuite.tearDown);
+        jsUnity.assertions.assertEquals("testGlobalPass1", testSuite.tests[0].name);
+        jsUnity.assertions.assertEquals(testGlobalPass1, testSuite.tests[0].fn);
+    }
+
+    function testCompileObject() {
+        var objectTestSuite = {
+            suiteName: "TestSuite",
+            setUp: global.setUp,
+            tearDown: global.tearDown,
+            testGlobalPass1: testGlobalPass1
+        };
+        
+        var testSuite = jsUnity.compile(objectTestSuite);
+        
+        jsUnity.assertions.assertTrue(testSuite instanceof jsUnity.TestSuite);
+        jsUnity.assertions.assertEquals("TestSuite", testSuite.suiteName);
+        jsUnity.assertions.assertEquals(objectTestSuite, testSuite.scope);
+        jsUnity.assertions.assertEquals(global.setUp, testSuite.setUp);
+        jsUnity.assertions.assertEquals(global.tearDown, testSuite.tearDown);
+        jsUnity.assertions.assertEquals("testGlobalPass1", testSuite.tests[0].name);
+        jsUnity.assertions.assertEquals(testGlobalPass1, testSuite.tests[0].fn);
+    }
+
+    function testCompileString() {
+        var stringTestSuite =
+            [ global.setUp, global.tearDown, testGlobalPass1 ].join("\n");
+
+        var testSuite = jsUnity.compile(stringTestSuite);
+
+        jsUnity.assertions.assertTrue(testSuite instanceof jsUnity.TestSuite);
+        jsUnity.assertions.assertUndefined(testSuite.suiteName);
+        jsUnity.assertions.assertEquals("object", typeof testSuite.scope);
+        jsUnity.assertions.assertEquals(global.setUp.toString(),
+            testSuite.setUp.toString());
+        jsUnity.assertions.assertEquals(global.tearDown.toString(),
+            testSuite.tearDown.toString());
+        jsUnity.assertions.assertEquals("testGlobalPass1",
+            testSuite.tests[0].name);
+        jsUnity.assertions.assertEquals(testGlobalPass1.toString(),
+            testSuite.tests[0].fn.toString());
+    }
+
+    function testCompileNumber() {
+        try {
+            jsUnity.compile(42);
+            jsUnity.assertions.fail();
+        } catch (e) {
+            // pass
+        }
+    }
+
+    function testRunTestSuite() {
+        setUps = 0;
+        tearDowns = 0;
+        
+        var testSuite = new jsUnity.TestSuite("TestSuite");
+        testSuite.setUp = global.setUp;
+        testSuite.tearDown = global.tearDown;
+        testSuite.tests.push({ name: "testGlobalPass1", fn: testGlobalPass1 });
+        testSuite.tests.push({ name: "testGlobalPass2", fn: testGlobalPass2 });
+        testSuite.tests.push({ name: "testGlobalFail", fn: testGlobalFail });
+        
+        checkResults(jsUnity.run(testSuite), "TestSuite");
+    }
+
+    function testRunNamedFunction() {
         setUps = 0;
         tearDowns = 0;
 
@@ -120,17 +311,10 @@ function coreTestSuite() {
             function testNamedFail() { throw "fail"; }
         }
         
-        var results = jsUnity.run(namedTestSuite);
-        jsUnity.assertions.assertEquals("namedTestSuite", results.suiteName);
-        jsUnity.assertions.assertEquals(3, results.total);
-        jsUnity.assertions.assertEquals(2, results.passed);
-        jsUnity.assertions.assertEquals(1, results.failed);
-
-        jsUnity.assertions.assertEquals(3, setUps);
-        jsUnity.assertions.assertEquals(3, tearDowns);
+        checkResults(jsUnity.run(namedTestSuite), "namedTestSuite");
     }
 
-    function testRunFunctionAnonymous() {
+    function testRunAnonymousFunction() {
         setUps = 0;
         tearDowns = 0;
 
@@ -142,32 +326,37 @@ function coreTestSuite() {
             function testAnonymousFail() { throw "fail"; }
         };
 
-        var results = jsUnity.run(anonymousTestSuite);
-        jsUnity.assertions.assertEquals(3, results.total);
-        jsUnity.assertions.assertEquals(2, results.passed);
-        jsUnity.assertions.assertEquals(1, results.failed);
-
-        jsUnity.assertions.assertEquals(3, setUps);
-        jsUnity.assertions.assertEquals(3, tearDowns);
+        checkResults(jsUnity.run(anonymousTestSuite));
     }
 
-    function testRunArray() {
+    function testRunArrayOfFunctions() {
         setUps = 0;
         tearDowns = 0;
 
         var arrayTestSuite = [
-            "testArrayPass1",
-            "testArrayPass2",
-            "testArrayFail"
+            global.setUp,
+            global.tearDown,
+            testGlobalPass1,
+            testGlobalPass2,
+            testGlobalFail
         ];
 
-        var results = jsUnity.run(arrayTestSuite);
-        jsUnity.assertions.assertEquals(3, results.total);
-        jsUnity.assertions.assertEquals(2, results.passed);
-        jsUnity.assertions.assertEquals(1, results.failed);
+        checkResults(jsUnity.run(arrayTestSuite));
+    }
 
-        jsUnity.assertions.assertEquals(0, setUps);
-        jsUnity.assertions.assertEquals(0, tearDowns);
+    function testRunArrayOfStrings() {
+        setUps = 0;
+        tearDowns = 0;
+
+        var arrayTestSuite = [
+            "setUp",
+            "tearDown",
+            "testGlobalPass1",
+            "testGlobalPass2",
+            "testGlobalFail"
+        ];
+
+        checkResults(jsUnity.run(arrayTestSuite));
     }
 
     function testRunObject() {
@@ -183,35 +372,21 @@ function coreTestSuite() {
             testObjectFail: function () { throw "fail"; }
         };
 
-        var results = jsUnity.run(objectTestSuite);
-        jsUnity.assertions.assertEquals("objectTestSuite", results.suiteName);
-        jsUnity.assertions.assertEquals(3, results.total);
-        jsUnity.assertions.assertEquals(2, results.passed);
-        jsUnity.assertions.assertEquals(1, results.failed);
-
-        jsUnity.assertions.assertEquals(3, setUps);
-        jsUnity.assertions.assertEquals(3, tearDowns);
+        checkResults(jsUnity.run(objectTestSuite), "objectTestSuite");
     }
 
     function testRunString() {
         setUps = 0;
         tearDowns = 0;
 
-        var stringTestSuite = "\
-                function setUp() { setUps++; }\
-                function tearDown() { tearDowns++; }\
-                function testStringPass1() {}\
-                function testStringPass2() {}\
-                function testStringFail() { throw \"fail\"; }\
-            ";
+        var stringTestSuite =
+            "function setUp() { setUps++; }"
+            + "function tearDown() { tearDowns++; }"
+            + "function testStringPass1() {}"
+            + "function testStringPass2() {}"
+            + "function testStringFail() { throw \"fail\"; }";
 
-        var results = jsUnity.run(stringTestSuite);
-        jsUnity.assertions.assertEquals(3, results.total);
-        jsUnity.assertions.assertEquals(2, results.passed);
-        jsUnity.assertions.assertEquals(1, results.failed);
-
-        jsUnity.assertions.assertEquals(3, setUps);
-        jsUnity.assertions.assertEquals(3, tearDowns);
+        checkResults(jsUnity.run(stringTestSuite));
     }
 
     function testRunNumber() {
@@ -239,14 +414,70 @@ function coreTestSuite() {
         jsUnity.assertions.assertEquals(1, results.failed);
     }
     
-    function testRunBindsTestSuiteAsTestScope() {
-        jsUnity.run({
-            marker: true,
-            
-            testMarker: function () {
-                assertTrue(this.marker);
+    function testRunTestSuiteBindsGivenScopeAsTestScope() {
+        var testSuite = new jsUnity.TestSuite("TestSuite", { marker: true });
+        testSuite.tests.push({
+            name: "testMarker",
+            fn: function () {
+                jsUnity.assertions.assertTrue(this.marker);
             }
         });
+
+        var results = jsUnity.run(testSuite);
+
+        jsUnity.assertions.assertEquals(1, results.passed);
+    }
+
+    function testRunFunctionWontBindFunctionAsTestScope() {
+        function testSuite() {
+            function testMarker() {
+                jsUnity.assertions.assertTrue(this.marker);
+            }
+        }
+
+        testSuite.marker = true;
+
+        var results = jsUnity.run(testSuite);
+
+        jsUnity.assertions.assertEquals(1, results.failed);
+    }
+
+    function testRunArrayWontBindArrayAsTestScope() {
+        function testMarker() {
+            jsUnity.assertions.assertTrue(this.marker);
+        }
+
+        var testSuite = [ testMarker ];
+
+        testSuite.marker = true;
+
+        var results = jsUnity.run(testSuite);
+
+        jsUnity.assertions.assertEquals(1, results.failed);
+    }
+
+    function testRunStringWontBindStringAsTestScope() {
+        var testSuite = "function testMarker() {"
+            + "jsUnity.assertions.assertTrue(this.marker);"
+            + "}";
+
+        testSuite.marker = true;
+
+        var results = jsUnity.run(testSuite);
+
+        jsUnity.assertions.assertEquals(1, results.failed);
+    }
+
+    function testRunObjectBindsObjectAsTestScope() {
+        var results = jsUnity.run({
+            marker: true,
+
+            testMarker: function () {
+                jsUnity.assertions.assertTrue(this.marker);
+            }
+        });
+
+        jsUnity.assertions.assertEquals(1, results.passed);
     }
 }
 //%>

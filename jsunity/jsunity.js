@@ -90,7 +90,7 @@ jsUnity = (function () {
         }
         
         return {
-            name: tokens[1],
+            name: tokens[1].length ? tokens[1] : undefined,
             body: tokens[2]
         };
     }
@@ -109,18 +109,18 @@ jsUnity = (function () {
 
         var probeInside = new Function(
             splitFunction(probeOutside).body + str);
-        
+
         var tokenRe = /(\w+)/g; // todo: wiser regex
         var tokens;
-        
+
         while ((tokens = tokenRe.exec(str))) {
             var token = tokens[1];
             var fn;
     
             if (!obj[token]
                 && (fn = probeInside(token))
-                && !probeOutside(token)) {
-                    
+                && fn != probeOutside(token)) {
+
                 obj[token] = fn;
             }
         }
@@ -163,19 +163,18 @@ jsUnity = (function () {
     }
 
     function parseSuiteObject(obj) {
-        var suite = {
-            suiteName: obj.suiteName,
-            tests: []
-        };
+        var suite = new jsUnity.TestSuite(obj.suiteName, obj);
 
         for (var name in obj) {
-            var fn = obj[name];
-            
-            if (obj.hasOwnProperty(name) && typeof fn === "function") {
-                if (/^test/.test(name)) {
-                    suite.tests.push({ name: name, fn: fn });
-                } else if (/^setUp|tearDown$/.test(name)) {
-                    suite[name] = fn;
+            if (obj.hasOwnProperty(name)) {
+                var fn = obj[name];
+
+                if (typeof fn === "function") {
+                    if (/^test/.test(name)) {
+                        suite.tests.push({ name: name, fn: fn });
+                    } else if (/^setUp|tearDown$/.test(name)) {
+                        suite[name] = fn;
+                    }
                 }
             }
         }
@@ -183,21 +182,23 @@ jsUnity = (function () {
         return suite;
     }
 
-    function parseSuite(v) {
-        if (v instanceof Function) {
-            return parseSuiteFunction(v);
-        } else if (v instanceof Array) {
-            return parseSuiteArray(v);
-        } else if (v instanceof Object) {
-            return parseSuiteObject(v);
-        } else if (typeof v === "string") {
-            return parseSuiteString(v);
-        } else {
-            throw "Must be a function, array, object or string.";
-        }
-    }
-
     return {
+        TestSuite: function (suiteName, scope) {
+            this.suiteName = suiteName;
+            this.scope = scope;
+            this.tests = [];
+            this.setUp = undefined;
+            this.tearDown = undefined;
+        },
+
+        TestResults: function () {
+            this.suiteName = undefined;
+            this.total = 0;
+            this.passed = 0;
+            this.failed = 0;
+            this.duration = 0;
+        },
+
         assertions: defaultAssertions,
 
         env: {
@@ -220,18 +221,32 @@ jsUnity = (function () {
 
         error: function (s) { this.log("[ERROR] " + s); },
 
+        compile: function (v) {
+            if (v instanceof jsUnity.TestSuite) {
+                return v;
+            } else if (v instanceof Function) {
+                return parseSuiteFunction(v);
+            } else if (v instanceof Array) {
+                return parseSuiteArray(v);
+            } else if (v instanceof Object) {
+                return parseSuiteObject(v);
+            } else if (typeof v === "string") {
+                return parseSuiteString(v);
+            } else {
+                throw "Argument must be a function, array, object, string or "
+                    + "TestSuite instance.";
+            }
+        },
+
         run: function () {
-            var results = {
-                total: 0,
-                passed: 0
-            };
+            var results = new jsUnity.TestResults();
 
             var suiteNames = [];
             var start = jsUnity.env.getDate();
 
             for (var i = 0; i < arguments.length; i++) {
                 try {
-                    var suite = parseSuite(arguments[i]);
+                    var suite = jsUnity.compile(arguments[i]);
                 } catch (e) {
                     this.error("Invalid test suite: " + e);
                     return false;
@@ -251,7 +266,7 @@ jsUnity = (function () {
     
                     try {
                         suite.setUp && suite.setUp();
-                        test.fn.call(suite);
+                        test.fn.call(suite.scope);
                         suite.tearDown && suite.tearDown();
 
                         results.passed++;

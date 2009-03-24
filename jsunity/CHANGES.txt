@@ -1,3 +1,10 @@
+  - Made missing test suite names undefined instead of empty string
+  - Fixed function probing logic so that an outer function doesn't shield
+    an inner function with the same name
+  - Added compile
+  - Introduced TestSuite and TestResults classes
+  - Fixed test suite scope to use the object for object test suites instead
+    of the generated test suite object
   - Test cases are run within the scope of the test suite (as "this")
   - Fixed multiple test suite name concatenation to work with AppJet
 
