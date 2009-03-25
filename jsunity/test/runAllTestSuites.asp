@@ -11,7 +11,7 @@
 <body>
 <%
 jsUnity.log = function (s) { Response.Write("<div>" + s + "</div>"); }
-jsUnity.run(assertionTestSuite, coreTestSuite);
+jsUnity.run(AssertionTestSuite, CoreTestSuite);
 %>
 </body>
 </html>

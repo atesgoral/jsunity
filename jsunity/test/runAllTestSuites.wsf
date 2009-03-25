@@ -8,7 +8,7 @@
 <![CDATA[
 var output = [];
 jsUnity.log = function (s) { output.push(s); }
-jsUnity.run(assertionTestSuite, coreTestSuite);
+jsUnity.run(AssertionTestSuite, CoreTestSuite);
 WScript.Echo(output.join("\r\n"));
 ]]>
 </script>

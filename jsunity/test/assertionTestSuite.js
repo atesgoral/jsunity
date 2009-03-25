@@ -1,93 +1,372 @@
 //<%
-function assertionTestSuite() {
-    function assertException(fn) {
-        var fail = false;
+var a = {};
+jsUnity.attachAssertions(a);
 
+function AssertionTestSuite() {
+    function checkMessageMarker(fn) {
         try {
             fn();
-            fail = true;
         } catch (e) {
-            // Eat the exception
-        }
-        
-        if (fail) {
-            throw "An exception wasn't thrown";
+            a.assertMatch(/marker/, e);
         }
     }
 
-    function testAssertTrue() {
-        jsUnity.assertions.assertTrue(true);
-
-        assertException(function () { jsUnity.assertions.assertTrue(false); });
+    function testAssertExceptionPositive() {
+        a.assertException(function () {
+            throw 1;
+        });
     }
 
-    function testAssertFalse() {
-        jsUnity.assertions.assertFalse(false);
-
-        assertException(function () { jsUnity.assertions.assertFalse(true); });
+    function testAssertExceptionNegative() {
+        a.assertException(function () {
+            a.assertException(function () {});
+        });
     }
 
-    function testAssertEquals() {
-        jsUnity.assertions.assertEquals(1, 1);
-        var n = new Number(5);
-        jsUnity.assertions.assertEquals(n, n);
-        jsUnity.assertions.assertEquals(undefined, undefined);
+    function testAssertExceptionMessage() {
+        checkMessageMarker(function () {
+            a.assertException(function () {}, "marker");
+        });
+    }
+    
+    function testAssertTruePositive() {
+        a.assertTrue(true);
+    }
+
+    function testAssertTrueNegative() {
+        a.assertException(function () {
+            a.assertTrue(false);
+        });
+    }
+
+    function testAssertTrueMessage() {
+        checkMessageMarker(function () {
+            a.assertTrue(false, "marker");
+        });
+    }
+
+    function testAssertFalsePositive() {
+        a.assertFalse(false);
+    }
+
+    function testAssertFalseNegative() {
+        a.assertException(function () {
+            a.assertFalse(true);
+        });
+    }
+
+    function testAssertFalseMessage() {
+        checkMessageMarker(function () {
+            a.assertFalse(true, "marker");
+        });
+    }
+    
+    function testAssertIdenticalPositive() {
+        a.assertIdentical(1, 1);
+        a.assertIdentical(null, null);
+        a.assertIdentical(undefined, undefined);
+        var obj = {};
+        a.assertIdentical(obj, obj);
+    }
+
+    function testAssertIdenticalNegative() {
+        a.assertException(function () {
+            a.assertIdentical(1, "1");
+        });
+        a.assertException(function () {
+            a.assertIdentical(null, undefined);
+        });
+        a.assertException(function () {
+            a.assertIdentical(false, 0);
+        });
+    }
+
+    function testAssertIdenticalMessage() {
+        checkMessageMarker(function () {
+            a.assertIdentical(1, "1", "marker");
+        });
+    }
+
+    function testAssertNotIdenticalPositive() {
+        a.assertNotIdentical("1", 1);
+        a.assertNotIdentical(undefined, null);
+        a.assertNotIdentical(1, true);
+        var obj1 = {};
+        var obj2 = {};
+        a.assertNotIdentical(obj1, obj2);
+    }
         
-        assertException(function () { jsUnity.assertions.assertEquals("foo", "bar"); });
-        assertException(function () { jsUnity.assertions.assertEquals(undefined, new Date()); });
-        assertException(function () { jsUnity.assertions.assertEquals([42], undefined); });
+    function testAssertNotIdenticalNegative() {
+        a.assertException(function () {
+            a.assertNotIdentical(1, 1);
+        });
+        a.assertException(function () {
+            a.assertNotIdentical(null, null);
+        });
+        a.assertException(function () {
+            a.assertNotIdentical(undefined, undefined);
+        });
+        var obj = {};
+        a.assertException(function () {
+            a.assertNotIdentical(obj, obj);
+        });
     }
 
-    function testAssertNotEquals() {
-        jsUnity.assertions.assertNotEquals(1, 2);
-        jsUnity.assertions.assertNotEquals(new Number(5), new Number(6));
-        jsUnity.assertions.assertNotEquals(undefined, "foo");
-        jsUnity.assertions.assertNotEquals([42], undefined);
+    function testAssertNotIdenticalMessage() {
+        checkMessageMarker(function () {
+            a.assertNotIdentical(1, 1, "marker");
+        });
+    }
+
+    function testAssertEqualPositive() {
+        a.assertEqual(1, "1");
+        a.assertEqual({ a: 1, b: [ 2, 3 ] }, { a: 1, b: [ 2, 3 ] });
+    }
+
+    function testAssertEqualNegative() {
+        a.assertException(function () {
+            a.assertEqual("2", 1);
+        });
+        a.assertException(function () {
+            a.assertEqual({}, null);
+        });
+        a.assertException(function () {
+            a.assertEqual(undefined, null);
+        });
+    }
+
+    function testAssertEqualMessage() {
+        checkMessageMarker(function () {
+            a.assertEqual("2", 1, "marker");
+        });
+    }
+
+    function testAssertNotEqualPositive() {
+        a.assertNotEqual(1, "2");
+        a.assertNotEqual(null, {});
+    }
         
-        assertException(function () { jsUnity.assertions.assertNotEquals(1, 1); });
-        assertException(function () { jsUnity.assertions.assertNotEquals(undefined, undefined); });
+    function testAssertNotEqualNegative() {
+        a.assertException(function () {
+            a.assertNotEqual("2", 2);
+        });
+        a.assertException(function () {
+            a.assertNotEqual({ a: 1, b: [ 2, 3 ] }, { a: 1, b: [ 2, 3 ] });
+        });
     }
 
-    function testAssertNull() {
-        jsUnity.assertions.assertNull(null);
-
-        assertException(function () { jsUnity.assertions.assertNull(5); });
+    function testAssertNotEqualMessage() {
+        checkMessageMarker(function () {
+            a.assertNotEqual("2", 2, "marker");
+        });
     }
 
-    function testAssertNotNull() {
-        jsUnity.assertions.assertNotNull(3);
-
-        assertException(function () { jsUnity.assertions.assertNotNull(null); });
+    function testAssertMatchPositive() {
+        a.assertMatch(/es/, "test");
     }
 
-    function testAssertUndefined() {
-        jsUnity.assertions.assertUndefined(undefined);
-
-        assertException(function () { jsUnity.assertions.assertUndefined(5); });
+    function testAssertMatchNegative() {
+        a.assertException(function () {
+            a.assertMatch(/foo/, "test");
+        });
     }
 
-    function testAssertNotUndefined() {
-        jsUnity.assertions.assertNotUndefined(3);
-
-        assertException(function () { jsUnity.assertions.assertNotUndefined(undefined); });
+    function testAssertMatchMessage() {
+        checkMessageMarker(function () {
+            a.assertMatch(/foo/, "test", "marker");
+        });
+    }
+    
+    function testAssertNotMatchPositive() {
+        a.assertNotMatch(/foo/, "test");
     }
 
-    function testAssertNaN() {
-        jsUnity.assertions.assertNaN(NaN);
-
-        assertException(function () { jsUnity.assertions.assertNaN(42); });
+    function testAssertNotMatchNegative() {
+        a.assertException(function () {
+            a.assertNotMatch(/es/, "test");
+        });
     }
 
-    function testAssertNotNaN() {
-        jsUnity.assertions.assertNotNaN(42);
+    function testAssertNotMatchMessage() {
+        checkMessageMarker(function () {
+            a.assertNotMatch(/es/, "test", "marker");
+        });
+    }
+    
+    function testAssertTypeOfPositive() {
+        a.assertTypeOf("string", "test");
+    }
 
-        assertException(function () { jsUnity.assertions.assertNotNaN(NaN); });
+    function testAssertTypeOfNegative() {
+        a.assertException(function () {
+            a.assertTypeOf("number", "test");
+        });
+    }
+
+    function testAssertTypeOfMessage() {
+        checkMessageMarker(function () {
+            a.assertTypeOf("number", "test", "marker");
+        });
+    }
+    
+    function testAssertNotTypeOfPositive() {
+        a.assertNotTypeOf("string", 1);
+    }
+
+    function testAssertNotTypeOfNegative() {
+        a.assertException(function () {
+            a.assertNotTypeOf("number", 1);
+        });
+    }
+
+    function testAssertNotTypeOfMessage() {
+        checkMessageMarker(function () {
+            a.assertNotTypeOf("number", 1, "marker");
+        });
+    }
+
+    function testAssertInstanceOfPositive() {
+        a.assertInstanceOf(String, new String("test"));
+    }
+
+    function testAssertInstanceOfNegative() {
+        a.assertException(function () {
+            a.assertInstanceOf(Number, {});
+        });
+    }
+
+    function testAssertInstanceOfMessage() {
+        checkMessageMarker(function () {
+            a.assertInstanceOf(Number, {}, "marker");
+        });
+    }
+    
+    function testAssertNotInstanceOfPositive() {
+        a.assertNotInstanceOf(String, []);
+    }
+
+    function testAssertNotInstanceOfNegative() {
+        a.assertException(function () {
+            a.assertNotInstanceOf(Number, new Number(1));
+        });
+    }
+
+    function testAssertNotInstanceOfMessage() {
+        checkMessageMarker(function () {
+            a.assertNotInstanceOf(Number, new Number(1), "marker");
+        });
+    }
+
+    function testAssertNullPositive() {
+        a.assertNull(null);
+    }
+
+    function testAssertNullNegative() {
+        a.assertException(function () {
+            a.assertNull(1);
+        });
+    }
+
+    function testAssertNullMessage() {
+        checkMessageMarker(function () {
+            a.assertNull(1, "marker");
+        });
+    }
+
+    function testAssertNotNullPositive() {
+        a.assertNotNull(1);
+    }
+
+    function testAssertNotNullNegative() {
+        a.assertException(function () {
+            a.assertNotNull(null);
+        });
+    }
+
+    function testAssertNotNullMessage() {
+        checkMessageMarker(function () {
+            a.assertNotNull(null, "marker");
+        });
+    }
+
+    function testAssertUndefinedPositive() {
+        a.assertUndefined(undefined);
+    }
+
+    function testAssertUndefinedNegative() {
+        a.assertException(function () {
+            a.assertUndefined(1);
+        });
+    }
+
+    function testAssertUndefinedMessage() {
+        checkMessageMarker(function () {
+            a.assertUndefined(1, "marker");
+        });
+    }
+
+    function testAssertNotUndefinedPositive() {
+        a.assertNotUndefined(1);
+    }
+
+    function testAssertNotUndefinedNegative() {
+        a.assertException(function () {
+            a.assertNotUndefined(undefined);
+        });
+    }
+
+    function testAssertNotUndefinedMessage() {
+        checkMessageMarker(function () {
+            a.assertNotUndefined(undefined, "marker");
+        });
+    }
+
+    function testAssertNaNPositive() {
+        a.assertNaN(NaN);
+        a.assertNaN("test");
+    }
+
+    function testAssertNaNNegative() {
+        a.assertException(function () {
+            a.assertNaN(1);
+        });
+    }
+
+    function testAssertNaNMessage() {
+        checkMessageMarker(function () {
+            a.assertNaN(1, "marker");
+        });
+    }
+
+    function testAssertNotNaNPositive() {
+        a.assertNotNaN(1);
+    }
+
+    function testAssertNotNaNNegative() {
+        a.assertException(function () {
+            a.assertNotNaN(NaN);
+        });
+        a.assertException(function () {
+            a.assertNotNaN("test");
+        });
+    }
+
+    function testAssertNotNaNMessage() {
+        checkMessageMarker(function () {
+            a.assertNotNaN(NaN, "marker");
+        });
     }
 
     function testFail() {
-        var pass = true;
+        a.assertException(function () {
+            a.fail();
+        });
+    }
 
-        assertException(function () { jsUnity.assertions.fail(); });
+    function testFailMessage() {
+        checkMessageMarker(function () {
+            a.fail("marker");
+        });
     }
 }
 //%>
