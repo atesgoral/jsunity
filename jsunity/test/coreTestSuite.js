@@ -60,8 +60,7 @@ function CoreTestSuite() {
         
         jsUnity.run(setUpTearDownTestSuite);
         
-        a.assertIdentical("setUp,testDummy,tearDown",
-            calls.join(","));
+        a.assertIdentical("setUp,testDummy,tearDown", calls.join(","));
     }
 
     function testLogCalled() {
@@ -187,17 +186,13 @@ function CoreTestSuite() {
         var internals = anonymousTestSuite();
         var testSuite = jsUnity.compile(anonymousTestSuite);
 
-        a.assertTrue(testSuite instanceof jsUnity.TestSuite);
+        a.assertInstanceOf(jsUnity.TestSuite, testSuite);
         a.assertUndefined(testSuite.suiteName);
-        a.assertIdentical("object", typeof testSuite.scope);
-        a.assertIdentical(internals.setUp.toString(),
-            testSuite.setUp.toString());
-        a.assertIdentical(internals.tearDown.toString(),
-            testSuite.tearDown.toString());
-        a.assertIdentical("testDummy",
-            testSuite.tests[0].name);
-        a.assertIdentical(internals.testDummy.toString(),
-            testSuite.tests[0].fn.toString());
+        a.assertTypeOf("object", testSuite.scope);
+        a.assertEqual(internals.setUp, testSuite.setUp);
+        a.assertEqual(internals.tearDown, testSuite.tearDown);
+        a.assertIdentical("testDummy", testSuite.tests[0].name);
+        a.assertEqual(internals.testDummy, testSuite.tests[0].fn);
     }
 
     function testCompileArrayOfFunctions() {
@@ -209,9 +204,9 @@ function CoreTestSuite() {
 
         var testSuite = jsUnity.compile(arrayTestSuite);
 
-        a.assertTrue(testSuite instanceof jsUnity.TestSuite);
+        a.assertInstanceOf(jsUnity.TestSuite, testSuite);
         a.assertUndefined(testSuite.suiteName);
-        a.assertIdentical("object", typeof testSuite.scope);
+        a.assertTypeOf("object", testSuite.scope);
         a.assertIdentical(global.setUp, testSuite.setUp);
         a.assertIdentical(global.tearDown, testSuite.tearDown);
         a.assertIdentical("testGlobalPass1", testSuite.tests[0].name);
@@ -227,9 +222,9 @@ function CoreTestSuite() {
 
         var testSuite = jsUnity.compile(arrayTestSuite);
 
-        a.assertTrue(testSuite instanceof jsUnity.TestSuite);
+        a.assertInstanceOf(jsUnity.TestSuite, testSuite);
         a.assertUndefined(testSuite.suiteName);
-        a.assertIdentical("object", typeof testSuite.scope);
+        a.assertTypeOf("object", testSuite.scope);
         a.assertIdentical(global.setUp, testSuite.setUp);
         a.assertIdentical(global.tearDown, testSuite.tearDown);
         a.assertIdentical("testGlobalPass1", testSuite.tests[0].name);
@@ -246,7 +241,7 @@ function CoreTestSuite() {
         
         var testSuite = jsUnity.compile(objectTestSuite);
         
-        a.assertTrue(testSuite instanceof jsUnity.TestSuite);
+        a.assertInstanceOf(jsUnity.TestSuite, testSuite);
         a.assertIdentical("TestSuite", testSuite.suiteName);
         a.assertIdentical(objectTestSuite, testSuite.scope);
         a.assertIdentical(global.setUp, testSuite.setUp);
@@ -261,17 +256,13 @@ function CoreTestSuite() {
 
         var testSuite = jsUnity.compile(stringTestSuite);
 
-        a.assertTrue(testSuite instanceof jsUnity.TestSuite);
+        a.assertInstanceOf(jsUnity.TestSuite, testSuite);
         a.assertUndefined(testSuite.suiteName);
-        a.assertIdentical("object", typeof testSuite.scope);
-        a.assertIdentical(global.setUp.toString(),
-            testSuite.setUp.toString());
-        a.assertIdentical(global.tearDown.toString(),
-            testSuite.tearDown.toString());
-        a.assertIdentical("testGlobalPass1",
-            testSuite.tests[0].name);
-        a.assertIdentical(testGlobalPass1.toString(),
-            testSuite.tests[0].fn.toString());
+        a.assertTypeOf("object", testSuite.scope);
+        a.assertEqual(global.setUp, testSuite.setUp);
+        a.assertEqual(global.tearDown, testSuite.tearDown);
+        a.assertIdentical("testGlobalPass1", testSuite.tests[0].name);
+        a.assertEqual(testGlobalPass1, testSuite.tests[0].fn);
     }
 
     function testCompileNumber() {
