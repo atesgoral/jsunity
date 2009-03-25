@@ -1,13 +1,15 @@
 //<%
-function setUp() { setUps++; }
-function tearDown() { tearDowns++; }
+function setUp() { global.setUps++; }
+function tearDown() { global.tearDowns++; }
 function testGlobalPass1() {}
 function testGlobalPass2() {}
 function testGlobalFail() { throw "fail"; }
 
 var global = {
     setUp: setUp,
-    tearDown: tearDown
+    tearDown: tearDown,
+    setUps: 0,
+    tearDowns: 0
 };
 
 var a = {};
@@ -27,13 +29,16 @@ function CoreTestSuite() {
         a.assertIdentical(2, results.passed);
         a.assertIdentical(1, results.failed);
 
-        a.assertIdentical(3, setUps);
-        a.assertIdentical(3, tearDowns);
+        a.assertIdentical(3, global.setUps);
+        a.assertIdentical(3, global.tearDowns);
     }
 
     function setUp() {
         origLog = jsUnity.log;
         jsUnity.log = function () {};
+
+        global.setUps = 0;
+        global.tearDowns = 0;
     }
 
     function tearDown() {
@@ -275,9 +280,6 @@ function CoreTestSuite() {
     }
 
     function testRunTestSuiteReturnsResults() {
-        setUps = 0;
-        tearDowns = 0;
-        
         var testSuite = new jsUnity.TestSuite("TestSuite");
         testSuite.setUp = global.setUp;
         testSuite.tearDown = global.tearDown;
@@ -289,12 +291,9 @@ function CoreTestSuite() {
     }
 
     function testRunNamedFunctionReturnsResults() {
-        setUps = 0;
-        tearDowns = 0;
-
         function namedTestSuite() {
-            function setUp() { setUps++; }
-            function tearDown() { tearDowns++; }
+            function setUp() { global.setUps++; }
+            function tearDown() { global.tearDowns++; }
             function testNamedPass1() {}
             function testNamedPass2() {}
             function testNamedFail() { throw "fail"; }
@@ -304,12 +303,9 @@ function CoreTestSuite() {
     }
 
     function testRunAnonymousFunctionReturnsResults() {
-        setUps = 0;
-        tearDowns = 0;
-
         var anonymousTestSuite = function () {
-            function setUp() { setUps++; }
-            function tearDown() { tearDowns++; }
+            function setUp() { global.setUps++; }
+            function tearDown() { global.tearDowns++; }
             function testAnonymousPass1() {}
             function testAnonymousPass2() {}
             function testAnonymousFail() { throw "fail"; }
@@ -319,9 +315,6 @@ function CoreTestSuite() {
     }
 
     function testRunArrayOfFunctionsReturnsResults() {
-        setUps = 0;
-        tearDowns = 0;
-
         var arrayTestSuite = [
             global.setUp,
             global.tearDown,
@@ -334,9 +327,6 @@ function CoreTestSuite() {
     }
 
     function testRunArrayOfStringsReturnsResults() {
-        setUps = 0;
-        tearDowns = 0;
-
         var arrayTestSuite = [
             "setUp",
             "tearDown",
@@ -349,13 +339,10 @@ function CoreTestSuite() {
     }
 
     function testRunObjectReturnsResults() {
-        setUps = 0;
-        tearDowns = 0;
-
         var objectTestSuite = {
             suiteName: "objectTestSuite",
-            setUp: function () { setUps++; },
-            tearDown: function () { tearDowns++; },
+            setUp: function () { global.setUps++; },
+            tearDown: function () { global.tearDowns++; },
             testObjectPass1: function () {},
             testObjectPass2: function () {},
             testObjectFail: function () { throw "fail"; }
@@ -365,12 +352,9 @@ function CoreTestSuite() {
     }
 
     function testRunStringReturnsResults() {
-        setUps = 0;
-        tearDowns = 0;
-
         var stringTestSuite =
-            "function setUp() { setUps++; }"
-            + "function tearDown() { tearDowns++; }"
+            "function setUp() { global.setUps++; }"
+            + "function tearDown() { global.tearDowns++; }"
             + "function testStringPass1() {}"
             + "function testStringPass2() {}"
             + "function testStringFail() { throw \"fail\"; }";
