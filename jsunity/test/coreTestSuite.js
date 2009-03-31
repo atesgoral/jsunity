@@ -452,5 +452,35 @@ function CoreTestSuite() {
 
         a.assertIdentical(1, results.passed);
     }
+    
+    function testRunObjectBindsObjectAsSetUpScope() {
+        var results = jsUnity.run({
+            setUp: function () {
+                this.marker = true;
+            },
+            testMarker: function () {
+                a.assertTrue(this.marker);
+            }
+        });
+
+        a.assertIdentical(1, results.passed);
+    }
+
+    function testRunObjectBindsObjectAsTearDownScope() {
+        var results = jsUnity.run({
+            tearDown: function () {
+                this.marker = true;
+            },
+            testNoop: function () {
+                a.assertTrue(true);
+            },
+            testMarker: function () {
+                a.assertTrue(this.marker);
+            }
+        });
+
+        a.assertIdentical(2, results.passed);
+    }
+
 }
 //%>
