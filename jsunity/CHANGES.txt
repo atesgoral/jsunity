@@ -1,3 +1,5 @@
+  - Bound the test suite object on setUp and tearDown calls
+
 0.6
   - Improved assertion messages, added custom message argument
   - Renamed assert[Not]Equals to assert[Not]Equal and made it more lax than the
