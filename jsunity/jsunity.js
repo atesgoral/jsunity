@@ -181,10 +181,6 @@ jsUnity = (function () {
             /^[\s\r\n]*function[\s\r\n]*([^\(\s\r\n]*?)[\s\r\n]*\([^\)\s\r\n]*\)[\s\r\n]*\{((?:[^}]*\}?)+)\}[\s\r\n]*$/
             .exec(fn);
         
-        if (!tokens) {
-            throw "Invalid function.";
-        }
-        
         return {
             name: tokens[1].length ? tokens[1] : undefined,
             body: tokens[2]
