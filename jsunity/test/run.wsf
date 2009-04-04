@@ -1,0 +1,16 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<package>
+    <job>
+        <script language="JavaScript" src="../jsunity.js"/>
+        <script language="JavaScript" src="assertion.js"/>
+        <script language="JavaScript" src="core.js"/>
+        <script language="JavaScript">
+        var output = [];
+
+        jsUnity.log = function (s) { output.push(s); }
+        jsUnity.run(AssertionTestSuite, CoreTestSuite);
+
+        WScript.Echo(output.join("\r\n"));
+        </script>
+    </job>
+</package> 

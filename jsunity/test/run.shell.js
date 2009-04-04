@@ -1,6 +1,6 @@
 load("../jsunity.js");
-load("assertionTestSuite.js");
-load("coreTestSuite.js");
+load("assertion.js");
+load("core.js");
 
 jsUnity.log = function (s) { print(s); };
 jsUnity.run(AssertionTestSuite, CoreTestSuite);

@@ -1,8 +1,8 @@
 ﻿<%@LANGUAGE="JavaScript"%>
 <% Response.Buffer = true; %>
 <!--#include file="../jsunity.js"-->
-<!--#include file="assertionTestSuite.js"-->
-<!--#include file="coreTestSuite.js"-->
+<!--#include file="assertion.js"-->
+<!--#include file="core.js"-->
 <% Response.Clear(); %>
 <html>
 <head>
