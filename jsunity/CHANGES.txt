@@ -1,3 +1,5 @@
+  - Pass test name to test function and setUp/tearDown
+  - Fixed failing test case tearDown scope
   - Removed "invalid function" exception that doesn't seem to be possible, for
     100% code coverage
   - Bound the test suite object on setUp and tearDown calls

@@ -46,26 +46,78 @@ function CoreTestSuite() {
         delete origLog;
     }
 
-    function testSetUpTearDownCalled() {
-        function setUpTearDownTestSuite() {
-            function setUp() {
+    function testSetUpTearDownCalledPassing() {
+        var calls = [];
+        
+        jsUnity.run({
+            setUp: function () {
                 calls.push("setUp");
-            }
-            
-            function tearDown() {
+            },
+            tearDown: function () {
                 calls.push("tearDown");
+            },
+            testPassing: function () {
+                calls.push("testPassing");
             }
-            
-            function testDummy() {
-                calls.push("testDummy");
-            }
-        }
+        });
+        
+        a.assertEqual([ "setUp", "testPassing", "tearDown" ], calls);
+    }
 
-        calls = [];
+    function testSetUpTearDownCalledFailing() {
+        var calls = [];
         
-        jsUnity.run(setUpTearDownTestSuite);
+        jsUnity.run({
+            setUp: function () {
+                calls.push("setUp");
+            },
+            tearDown: function () {
+                calls.push("tearDown");
+            },
+            testFailing: function () {
+                calls.push("testFailing");
+                a.fail();
+            }
+        });
         
-        a.assertIdentical("setUp,testDummy,tearDown", calls.join(","));
+        a.assertEqual([ "setUp", "testFailing", "tearDown" ], calls);
+    }
+
+    function testArgumentsPassing() {
+        var calls = [];
+        
+        jsUnity.run({
+            setUp: function (testName) {
+                calls.push(testName);
+            },
+            tearDown: function (testName) {
+                calls.push(testName);
+            },
+            testPassing: function (testName) {
+                calls.push(testName);
+            }
+        });
+        
+        a.assertEqual([ "testPassing", "testPassing", "testPassing" ], calls);
+    }
+
+    function testArgumentsFailing() {
+        var calls = [];
+        
+        jsUnity.run({
+            setUp: function (testName) {
+                calls.push(testName);
+            },
+            tearDown: function (testName) {
+                calls.push(testName);
+            },
+            testFailing: function (testName) {
+                calls.push(testName);
+                a.fail();
+            }
+        });
+        
+        a.assertEqual([ "testFailing", "testFailing", "testFailing" ], calls);
     }
 
     function testLogCalled() {
@@ -466,14 +518,12 @@ function CoreTestSuite() {
         a.assertIdentical(1, results.passed);
     }
 
-    function testRunObjectBindsObjectAsTearDownScope() {
+    function testRunObjectBindsObjectAsPassingTearDownScope() {
         var results = jsUnity.run({
             tearDown: function () {
                 this.marker = true;
             },
-            testNoop: function () {
-                a.assertTrue(true);
-            },
+            testPassing: function () {},
             testMarker: function () {
                 a.assertTrue(this.marker);
             }
@@ -482,5 +532,21 @@ function CoreTestSuite() {
         a.assertIdentical(2, results.passed);
     }
 
+    function testRunObjectBindsObjectAsFailingTearDownScope() {
+        var results = jsUnity.run({
+            tearDown: function () {
+                this.marker = true;
+            },
+            testFailing: function () {
+                a.fail();
+            },
+            testMarker: function () {
+                a.assertTrue(this.marker);
+            }
+        });
+
+        a.assertIdentical(1, results.passed);
+        a.assertIdentical(1, results.failed);
+    }
 }
 //%>

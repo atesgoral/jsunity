@@ -172,6 +172,8 @@ jsUnity = (function () {
         }
     };
     
+    function empty() {}
+    
     function plural(cnt, unit) {
         return cnt + " " + unit + (cnt == 1 ? "" : "s");
     }
@@ -309,7 +311,7 @@ jsUnity = (function () {
             }
         },
 
-        log: function () {},
+        log: empty,
 
         error: function (s) { this.log("[ERROR] " + s); },
 
@@ -352,20 +354,33 @@ jsUnity = (function () {
     
                 suiteNames.push(suite.suiteName);
                 results.total += cnt;
+                
+                function getFixtureUtil(fnName) {
+                    var fn = suite[fnName];
+                    
+                    return fn
+                        ? function (testName) {
+                            fn.call(suite.scope, testName);
+                        }
+                        : empty;
+                }
+                
+                var setUp = getFixtureUtil("setUp");
+                var tearDown = getFixtureUtil("tearDown");
 
                 for (var j = 0; j < cnt; j++) {
                     var test = suite.tests[j];
     
                     try {
-                        suite.setUp && suite.setUp.call(suite.scope);
-                        test.fn.call(suite.scope);
-                        suite.tearDown && suite.tearDown.call(suite.scope);
+                        setUp(test.name);
+                        test.fn.call(suite.scope, test.name);
+                        tearDown(test.name);
 
                         results.passed++;
 
                         this.log("[PASSED] " + test.name);
                     } catch (e) {
-                        suite.tearDown && suite.tearDown();
+                        tearDown(test.name);
 
                         this.log("[FAILED] " + test.name + ": " + e);
                     }
