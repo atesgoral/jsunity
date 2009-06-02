@@ -4,18 +4,11 @@
     <script type="text/javascript" src="../jsunity.js"></script>
     <script type="text/javascript" src="assertion.js"></script>
     <script type="text/javascript" src="core.js"></script>
-    <style type="text/css">
-        .level_error { color: red }
-        .level_warn { color: orange }
-        .level_info { color: black }
-        .level_debug { color: darkgray }
-    </style>
 </head>
 <body>
     <script type="text/javascript">
-    jsUnity.log.write = function (s, level) {
-        document.write("<div class=\"level_" + level + "\">["
-            + level.toUpperCase() + "] " + s + "</div>");
+    jsUnity.tap.write = function (s) {
+        document.write("<div>" + s + "</div>");
     };
     jsUnity.run(AssertionTestSuite, CoreTestSuite);
     </script>

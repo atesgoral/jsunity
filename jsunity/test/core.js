@@ -7,9 +7,7 @@ function testGlobalFail() { throw "fail"; }
 
 var global = {
     setUp: setUp,
-    tearDown: tearDown,
-    setUps: 0,
-    tearDowns: 0
+    tearDown: tearDown
 };
 
 var a = {};
@@ -34,16 +32,32 @@ function CoreTestSuite() {
     }
 
     function setUp() {
-        origLog = jsUnity.log;
-        jsUnity.log = function () {};
-
         global.setUps = 0;
         global.tearDowns = 0;
+        
+        var sandbox = {
+            dateGetter: jsUnity.env.getDate,
+            logWriter: jsUnity.log.write,
+            tapWriter: jsUnity.tap.write,
+            logData: [],
+            tapData: [],
+        };
+
+        jsUnity.env.getDate = function () { return 0; }
+        jsUnity.log.write = function () {
+            sandbox.logData.push(Array.prototype.slice.call(arguments, 0));
+        };
+        jsUnity.tap.write = function () {
+            sandbox.tapData.push(arguments[0]);
+        };
+        
+        this.sandbox = sandbox;
     }
 
     function tearDown() {
-        jsUnity.log = origLog;
-        delete origLog;
+        jsUnity.env.getDate = this.sandbox.dateGetter;
+        jsUnity.log.write = this.sandbox.logWriter;
+        jsUnity.tap.write = this.sandbox.tapWriter;
     }
 
     function testSetUpTearDownCalledPassing() {
@@ -121,48 +135,32 @@ function CoreTestSuite() {
     }
 
     function testLogCalled() {
-        var hijackedLog = jsUnity.log;
-        var hijackedGetDate = jsUnity.env.getDate;
-
-        var logStrs = [];
-        
-        jsUnity.log = function (s) {
-            logStrs.push(s);
-        };
-        
-        jsUnity.env.getDate = function () {
-            return 0;
-        };
-        
         var results = jsUnity.run(function () {});
 
-        jsUnity.log = hijackedLog;
-        jsUnity.env.getDate = hijackedGetDate;
-
-        a.assertIdentical(
-            "Running unnamed test suite\n"
-            + "0 tests found\n"
-            + "0 tests passed\n"
-            + "0 tests failed\n"
-            + "0 milliseconds elapsed",
-            logStrs.join("\n"));
+        a.assertEqual(
+            [
+                [ "Running unnamed test suite", "info" ],
+                [ "0 tests found", "info" ],
+                [ "0 tests passed", "info" ],
+                [ "0 tests failed", "info" ],
+                [ "0 milliseconds elapsed", "info" ]
+            ],
+            this.sandbox.logData);
     }
 
     function testErrorCalled() {
-        var hijackedError = jsUnity.error;
+        var hijackedError = jsUnity.log.error;
 
-        var errorStr;
+        var errorCalled = false;
         
-        jsUnity.error = function (s) {
-            errorStr = s;
-        };
+        jsUnity.log.error = function () { errorCalled = true; };
         
         var results = jsUnity.run(false);
 
-        jsUnity.error = hijackedError;
+        jsUnity.log.error = hijackedError;
 
         a.assertIdentical(false, results);
-        a.assertTrue(errorStr.length > 0);
+        a.assertTrue(errorCalled);
     }
 
     function testAttachAssertionsDefaultScope() {

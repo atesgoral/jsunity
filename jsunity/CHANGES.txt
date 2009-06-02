@@ -1,3 +1,6 @@
+  - Added results stream and wired it to log and TAP streams.
+  - Added TAP 13 stream.
+  - Added log stream with error, warn, info and debug levels.
   - Pass test name to test function and setUp/tearDown
   - Fixed failing test case tearDown scope
   - Removed "invalid function" exception that doesn't seem to be possible, for

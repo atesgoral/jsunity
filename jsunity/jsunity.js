@@ -276,6 +276,66 @@ jsUnity = (function () {
         return suite;
     }
 
+    var logLevels = {
+        error: 1,
+        warn: 2,
+        info: 3,
+        debug: 4
+    };
+    
+    var logStream = {
+        write: empty,
+        level: "info"
+    };
+
+    for (var level in logLevels) {
+        logStream[level] = (function () {
+            var strLevel = level;
+            var numLevel = logLevels[level];
+
+            return function (s) {
+                if (numLevel >= logLevels[this.level] ) {
+                    this.write(s, strLevel);
+                }
+            };
+        })();
+    }
+
+    var tapStream = {
+        write: empty
+    };
+
+    var resultsStream = {
+        begin: function (total, suiteName) {
+            jsUnity.tap.write("TAP version 13");
+            jsUnity.tap.write("# " + suiteName);
+            jsUnity.tap.write("1.." + total);
+
+            jsUnity.log.info("Running "
+                + (suiteName || "unnamed test suite"));
+            jsUnity.log.info(plural(total, "test") + " found");
+        },
+
+        pass: function (index, testName) {
+            jsUnity.tap.write(fmt("ok ? - ?", index, testName));
+            jsUnity.log.info("[PASSED] " + testName);
+        },
+
+        fail: function (index, testName, message) {
+            jsUnity.tap.write(fmt("not ok ? - ?", index, testName));
+            jsUnity.tap.write("  ---");
+            jsUnity.tap.write("  " + message);
+            jsUnity.tap.write("  ...");
+            jsUnity.log.info(fmt("[FAILED] ?: ?", testName, message));
+        },
+
+        end: function (passed, failed, duration) {
+            jsUnity.log.info(plural(passed, "test") + " passed");
+            jsUnity.log.info(plural(failed, "test") + " failed");
+            jsUnity.log.info(plural(duration, "millisecond") + " elapsed");
+        }
+    };
+
     return {
         TestSuite: function (suiteName, scope) {
             this.suiteName = suiteName;
@@ -311,9 +371,9 @@ jsUnity = (function () {
             }
         },
 
-        log: empty,
-
-        error: function (s) { this.log("[ERROR] " + s); },
+        results: resultsStream,
+        log: logStream,
+        tap: tapStream,
 
         compile: function (v) {
             if (v instanceof jsUnity.TestSuite) {
@@ -342,15 +402,14 @@ jsUnity = (function () {
                 try {
                     var suite = jsUnity.compile(arguments[i]);
                 } catch (e) {
-                    this.error("Invalid test suite: " + e);
+                    this.log.error("Invalid test suite: " + e);
                     return false;
                 }
 
                 var cnt = suite.tests.length;
 
-                this.log("Running "
-                    + (suite.suiteName || "unnamed test suite"));
-                this.log(plural(cnt, "test") + " found");
+                this.results.begin(cnt, suite.suiteName);
+                // when running multiple suites, report counts at end?
     
                 suiteNames.push(suite.suiteName);
                 results.total += cnt;
@@ -376,13 +435,13 @@ jsUnity = (function () {
                         test.fn.call(suite.scope, test.name);
                         tearDown(test.name);
 
+                        this.results.pass(j + 1, test.name);
+
                         results.passed++;
-
-                        this.log("[PASSED] " + test.name);
                     } catch (e) {
-                        tearDown(test.name);
+                        tearDown(test.name); // if tearDown above throws exc, will call again!
 
-                        this.log("[FAILED] " + test.name + ": " + e);
+                        this.results.fail(j + 1, test.name, e);
                     }
                 }
             }
@@ -391,9 +450,7 @@ jsUnity = (function () {
             results.failed = results.total - results.passed;
             results.duration = jsUnity.env.getDate() - start;
 
-            this.log(plural(results.passed, "test") + " passed");
-            this.log(plural(results.failed, "test") + " failed");
-            this.log(plural(results.duration, "millisecond") + " elapsed");
+            this.results.end(results.passed, results.failed, results.duration);
 
             return results;
         }
