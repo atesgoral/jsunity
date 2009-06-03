@@ -351,6 +351,7 @@ jsUnity = (function () {
             this.passed = 0;
             this.failed = 0;
             this.duration = 0;
+            this.tests = [];
         },
 
         assertions: defaultAssertions,
@@ -429,20 +430,36 @@ jsUnity = (function () {
 
                 for (var j = 0; j < cnt; j++) {
                     var test = suite.tests[j];
+                    var testOutcome = {
+                        name: test.name
+                    };
+                    var testStart = jsUnity.env.getDate();
     
+                    var tearDownCalled = false;
+                    
                     try {
                         setUp(test.name);
                         test.fn.call(suite.scope, test.name);
+                        tearDownCalled = true;
                         tearDown(test.name);
 
                         this.results.pass(j + 1, test.name);
 
                         results.passed++;
+                        testOutcome.passed = true;
                     } catch (e) {
-                        tearDown(test.name); // if tearDown above throws exc, will call again!
+                        if (!tearDownCalled) {
+                            tearDown(test.name);
+                        }
 
                         this.results.fail(j + 1, test.name, e);
+
+                        testOutcome.passed = false;
+                        testOutcome.failureMessage = e;
                     }
+
+                    testOutcome.duration = jsUnity.env.getDate() - testStart;
+                    results.tests.push(testOutcome);
                 }
             }
 

@@ -1,3 +1,5 @@
+  - Added test outcomes to TestResults
+  - Fixed tearDown getting called second time when first time fails
   - Added results stream and wired it to log and TAP streams.
   - Added TAP 13 stream.
   - Added log stream with error, warn, info and debug levels.
