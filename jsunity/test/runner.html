@@ -40,21 +40,37 @@ window.onload = function () {
 
     var results = jsUnity.run(AssertionTestSuite, CoreTestSuite);
     
-    var xml = [ "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" ];
-    
-    xml.elem = function (tagName, attrs, close) {
-        var out = [];
-        out.$ = function (s) { this.push(s); return this; };
-        out.$("<").$(tagName);
-        for (var a in attrs || {}) {
-            out.$(" ").$(a).$("=\"").$(attrs[a]).$("\""); // encode!!
-        }
-        close && out.$("/");
-        out.$(">");
-        this.push(out.join(""));
+    function xmlEscape(s) {
+        return s.replace(/[<>&"]/g, function (c) {
+            return "&"
+                + { "<": "lt", ">": "gt", "&": "amp", "\"": "quot" }[c]
+                + ";";
+        });
+    }
+
+    var xml = [ "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" ];
+
+    xml.text = function (s) {
+        Array.prototype.push.call(this, s);
         return this;
     };
     
+    xml.elem = function (tagName, attrs, close) {
+        this.text("<").text(tagName);
+
+        for (var a in attrs || {}) {
+            this.text(" ").text(a).text("=\"")
+                .text(xmlEscape(String(attrs[a]))).text("\"");
+        }
+
+        close && this.text("/");
+        this.text(">\n");
+
+        return this;
+    };
+    
+    xml.toString = function () { return this.join(""); }
+
     xml.elem("testsuite", {
         errors: 0,
         failures: results.failed,
@@ -72,14 +88,14 @@ window.onload = function () {
         }, test.passed);
 
         if (!test.passed) {
-            xml.elem("failure", { message: test.failureMessage });
-            xml.elem("/testcase");
+            xml.elem("failure", { message: test.failureMessage })
+                .elem("/testcase");
         }
     }
 
     xml.elem("/testsuite");
 
-    document.getElementById("results").value = xml.join("\n");
+    document.getElementById("results").value = xml;
     //document.getElementById("save").submit();
 };
 </script>
