@@ -1,0 +1,93 @@
+<html>
+<head>
+<title>Core + Assertion Test Suite Runner</title>
+<style type="text/css">
+#log { font-size: 0.7em; }
+.level_error { color: red; }
+.level_warn { color: orange; }
+.level_info { color: black; }
+.level_debug { color: darkgray; }
+</style>
+<script type="text/javascript" src="../jsunity.js"></script>
+<script type="text/javascript" src="assertion.js"></script>
+<script type="text/javascript" src="core.js"></script>
+<script type="text/javascript">
+var logLines = [];
+
+jsUnity.log.write = function (s, level) {
+    logLines.push({ s: s, level: level });
+};
+
+function flushLog() {
+    var html = [];
+    for (var i = 0; i < logLines.length; i++) {
+        var logLine = logLines[i];
+        html.push("<div class=\"level_");
+        html.push(logLine.level);
+        html.push("\">[");
+        html.push(logLine.level.toUpperCase() );
+        html.push("] ");
+        html.push(logLine.s);
+        html.push("</div>\n");
+    }
+    logLines.length = 0;
+    document.getElementById("log").innerHTML += html.join("");
+    setTimeout(flushLog, 1000);
+}
+
+window.onload = function () {
+    flushLog();
+
+    var results = jsUnity.run(AssertionTestSuite, CoreTestSuite);
+    
+    var xml = [ "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" ];
+    
+    xml.elem = function (tagName, attrs, close) {
+        var out = [];
+        out.$ = function (s) { this.push(s); return this; };
+        out.$("<").$(tagName);
+        for (var a in attrs || {}) {
+            out.$(" ").$(a).$("=\"").$(attrs[a]).$("\""); // encode!!
+        }
+        close && out.$("/");
+        out.$(">");
+        this.push(out.join(""));
+        return this;
+    };
+    
+    xml.elem("testsuite", {
+        errors: 0,
+        failures: results.failed,
+        name: results.suiteName,
+        tests: results.total,
+        time: results.duration
+    });
+
+    for (var i = 0; i < results.tests.length; i++) {
+        var test = results.tests[i];
+
+        xml.elem("testcase", {
+            name: test.name,
+            time: test.duration
+        }, test.passed);
+
+        if (!test.passed) {
+            xml.elem("failure", { message: test.failureMessage });
+            xml.elem("/testcase");
+        }
+    }
+
+    xml.elem("/testsuite");
+
+    document.getElementById("results").value = xml.join("\n");
+    //document.getElementById("save").submit();
+};
+</script>
+</head>
+<body>
+<form action="save.asp" method="post" id="save">
+<textarea id="results" name="results" cols="80" rows="20"></textarea>
+</form>
+<div id="log"></div>
+</body>
+</html>
