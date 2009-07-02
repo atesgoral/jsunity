@@ -50,21 +50,19 @@ window.onload = function () {
 
     var xml = [ "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" ];
 
-    xml.text = function (s) {
-        Array.prototype.push.call(this, s);
+    xml.text = function () {
+        Array.prototype.push.apply(this, arguments);
         return this;
     };
     
-    xml.elem = function (tagName, attrs, close) {
-        this.text("<").text(tagName);
+    xml.elem = function (tagName, attrs, selfClose) {
+        this.text("<", tagName);
 
         for (var a in attrs || {}) {
-            this.text(" ").text(a).text("=\"")
-                .text(xmlEscape(String(attrs[a]))).text("\"");
+            this.text(" ", a, "=\"", xmlEscape(String(attrs[a])), "\"");
         }
 
-        close && this.text("/");
-        this.text(">\n");
+        this.text(selfClose ? "/" : "", ">\n");
 
         return this;
     };

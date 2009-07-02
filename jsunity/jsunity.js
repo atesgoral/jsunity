@@ -14,6 +14,14 @@ jsUnity = (function () {
         return str.replace(/\?/g, function () { return a.shift(); });
     }
 
+    function bind(fn, scope) {
+        return fn
+            ? function () {
+                fn.apply(scope, arguments);
+            }
+            : empty;
+    }
+
     function hash(v) {
         if (v instanceof Object) {
             var arr = [];
@@ -306,35 +314,48 @@ jsUnity = (function () {
     };
 
     var resultsStream = {
-        begin: function (total, suiteName) {
-            jsUnity.tap.write("TAP version 13");
-            jsUnity.tap.write("# " + suiteName);
-            jsUnity.tap.write("1.." + total);
-
-            jsUnity.log.info("Running "
-                + (suiteName || "unnamed test suite"));
-            jsUnity.log.info(plural(total, "test") + " found");
-        },
-
-        pass: function (index, testName) {
-            jsUnity.tap.write(fmt("ok ? - ?", index, testName));
-            jsUnity.log.info("[PASSED] " + testName);
-        },
-
-        fail: function (index, testName, message) {
-            jsUnity.tap.write(fmt("not ok ? - ?", index, testName));
-            jsUnity.tap.write("  ---");
-            jsUnity.tap.write("  " + message);
-            jsUnity.tap.write("  ...");
-            jsUnity.log.info(fmt("[FAILED] ?: ?", testName, message));
-        },
-
-        end: function (passed, failed, duration) {
-            jsUnity.log.info(plural(passed, "test") + " passed");
-            jsUnity.log.info(plural(failed, "test") + " failed");
-            jsUnity.log.info(plural(duration, "millisecond") + " elapsed");
-        }
+        begin: empty,
+        pass: empty,
+        fail: empty,
+        end: empty
     };
+
+    function resultsBegin(total, suiteName) {
+        resultsStream.begin.apply(this, arguments);
+        
+        tapStream.write("TAP version 13");
+        tapStream.write("# " + suiteName);
+        tapStream.write("1.." + total);
+
+        logStream.info("Running "
+            + (suiteName || "unnamed test suite"));
+        logStream.info(plural(total, "test") + " found");
+    }
+
+    function resultsPass(index, testName) {
+        resultsStream.pass.apply(this, arguments);
+
+        tapStream.write(fmt("ok ? - ?", index, testName));
+        logStream.info("[PASSED] " + testName);
+    }
+
+    function resultsFail(index, testName, message) {
+        resultsStream.fail.apply(this, arguments);
+
+        tapStream.write(fmt("not ok ? - ?", index, testName));
+        tapStream.write("  ---");
+        tapStream.write("  " + message);
+        tapStream.write("  ...");
+        logStream.info(fmt("[FAILED] ?: ?", testName, message));
+    }
+
+    function resultsEnd(passed, failed, duration) {
+        resultsStream.end.apply(this, arguments);
+
+        logStream.info(plural(passed, "test") + " passed");
+        logStream.info(plural(failed, "test") + " failed");
+        logStream.info(plural(duration, "millisecond") + " elapsed");
+    }
 
     return {
         TestSuite: function (suiteName, scope) {
@@ -393,6 +414,10 @@ jsUnity = (function () {
             }
         },
 
+        step: function () {
+            //return runtime;
+        },
+        
         run: function () {
             var results = new jsUnity.TestResults();
 
@@ -409,24 +434,19 @@ jsUnity = (function () {
 
                 var cnt = suite.tests.length;
 
-                this.results.begin(cnt, suite.suiteName);
+                resultsBegin(cnt, suite.suiteName);
                 // when running multiple suites, report counts at end?
     
                 suiteNames.push(suite.suiteName);
                 results.total += cnt;
                 
-                function getFixtureUtil(fnName) {
-                    var fn = suite[fnName];
-                    
-                    return fn
-                        ? function (testName) {
-                            fn.call(suite.scope, testName);
-                        }
-                        : empty;
-                }
+                var runtime = {
+                    //suite: suite
+                };
                 
-                var setUp = getFixtureUtil("setUp");
-                var tearDown = getFixtureUtil("tearDown");
+                for (var util in { "setUp": 1, "tearDown": 1 }) {
+                    runtime[util] = bind(suite[util], suite.scope); 
+                }
 
                 for (var j = 0; j < cnt; j++) {
                     var test = suite.tests[j];
@@ -438,21 +458,21 @@ jsUnity = (function () {
                     var tearDownCalled = false;
                     
                     try {
-                        setUp(test.name);
-                        test.fn.call(suite.scope, test.name);
+                        runtime.setUp(test.name);
+                        bind(test.fn, suite.scope)(test.name);
                         tearDownCalled = true;
-                        tearDown(test.name);
+                        runtime.tearDown(test.name);
 
-                        this.results.pass(j + 1, test.name);
+                        resultsPass(j + 1, test.name);
 
                         results.passed++;
                         testOutcome.passed = true;
                     } catch (e) {
                         if (!tearDownCalled) {
-                            tearDown(test.name);
+                            runtime.tearDown(test.name);
                         }
 
-                        this.results.fail(j + 1, test.name, e);
+                        resultsFail(j + 1, test.name, e);
 
                         testOutcome.passed = false;
                         testOutcome.failureMessage = e;
@@ -467,7 +487,7 @@ jsUnity = (function () {
             results.failed = results.total - results.passed;
             results.duration = jsUnity.env.getDate() - start;
 
-            this.results.end(results.passed, results.failed, results.duration);
+            resultsEnd(results.passed, results.failed, results.duration);
 
             return results;
         }

@@ -1,0 +1,106 @@
+body, input, button, textarea {
+    font: 13px sans-serif;
+    color: #333;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+}
+
+a {
+    color: #2297D7;
+}
+
+a:hover {
+    color: #3222D7;
+}
+
+input {
+    vertical-align: middle;
+}
+
+#message {
+    background: #2297D7;
+    color: #fff;
+    padding: 1em;
+    border-bottom: 1px solid #0277A7;
+}
+
+#message a {
+    color: #fff;
+    text-decoration: none;
+    background-color: #32A7E8;
+    padding: 0 2px;
+}
+
+#message a:hover {
+    background-color: #42B7F8;
+}
+
+#txt {
+    /*background: url(i/exclamation.png) no-repeat;
+    padding-left: 18px;*/
+}
+
+#close {
+    background: url(i/cross.png) no-repeat 100% 50%;
+    padding-right: 18px !important;
+}
+
+.hidden {
+    display: none;
+}
+
+#main {
+    margin: 2em;
+}
+
+#header {
+    margin: 0.5em 0.5em 2em 0.5em;
+}
+
+#header h1 {
+    margin: 0.25em 0;
+    width: 203px;
+    height: 47px;
+    background: #fff url(i/jsunity_logo.gif) no-repeat;
+}
+
+#tagline {
+    xfont-size: 77%;
+}
+
+#header h1 span {
+    display: none;
+}
+
+#log  .level_error { color: red; }
+#log  .level_warn { color: orange; }
+#log  .level_info { color: black; }
+#log  .level_debug { color: darkgray; }
+
+#settings label {
+    font-weight: bold;
+}
+
+#settings .field { margin: 0.5em; }
+#fields label { display: block; width: 32em; }
+#fields input { width: 32em; }
+#settings input { }
+
+#controls { margin: 0.5em; width: 32em; }
+.running  { background: url(i/ajax-loader.gif) 50% 50% no-repeat; }
+.running  #run, #stop { display: none; }
+.running #stop { display: inline-block; }
+
+#tooltip { background-color: #E8DCFF; border-color: #CEB1FF; width: 16em; }
+span.input { background: url(i/information.png) no-repeat 100% 50%; padding-right: 18px; }
+span.spacer { padding: 0 0.5em; color: transparent; }
+#footer { margin-top: 5em; font-size: 77%; clear: left; }
+#footer ul { list-style-type: none; margin: 0; padding: 0 }
+#footer li { float: left; margin: 0 0.65em; border: 1px solid #C2C2C2; }
+#log { font-family: monospace; margin: 0.5em; background: #f0f0f0; border: 1px solid #C2C2C2; margin-top: 1em; width: 31.5em; padding: 0.25em; }
+.mandatory label { padding-left: 16px; background: url(i/bullet_red.png) no-repeat; position: relative; left: -16px; }
+#footer { display: none }
+#tooltip hr { border-color: transparent; margin: 0.25em 0; }

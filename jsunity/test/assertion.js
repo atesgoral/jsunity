@@ -1,371 +1,372 @@
 //<%
-var a = {};
-jsUnity.attachAssertions(a);
-
 function AssertionTestSuite() {
+    function setUp() {
+        jsUnity.attachAssertions(this);
+    }
+    
     function checkMessageMarker(fn) {
         try {
-            fn();
+            fn.call(this);
         } catch (e) {
-            a.assertMatch(/marker/, e);
+            this.assertMatch(/marker/, e);
         }
     }
 
     function testAssertExceptionPositive() {
-        a.assertException(function () {
+        this.assertException(function () {
             throw 1;
         });
     }
 
     function testAssertExceptionNegative() {
-        a.assertException(function () {
-            a.assertException(function () {});
+        this.assertException(function () {
+            this.assertException(function () {});
         });
     }
 
     function testAssertExceptionMessage() {
-        checkMessageMarker(function () {
-            a.assertException(function () {}, "marker");
+        checkMessageMarker.call(this, function () {
+            this.assertException(function () {}, "marker");
         });
     }
     
     function testAssertTruePositive() {
-        a.assertTrue(true);
+        this.assertTrue(true);
     }
 
     function testAssertTrueNegative() {
-        a.assertException(function () {
-            a.assertTrue(false);
+        this.assertException(function () {
+            this.assertTrue(false);
         });
     }
 
     function testAssertTrueMessage() {
-        checkMessageMarker(function () {
-            a.assertTrue(false, "marker");
+        checkMessageMarker.call(this, function () {
+            this.assertTrue(false, "marker");
         });
     }
 
     function testAssertFalsePositive() {
-        a.assertFalse(false);
+        this.assertFalse(false);
     }
 
     function testAssertFalseNegative() {
-        a.assertException(function () {
-            a.assertFalse(true);
+        this.assertException(function () {
+            this.assertFalse(true);
         });
     }
 
     function testAssertFalseMessage() {
-        checkMessageMarker(function () {
-            a.assertFalse(true, "marker");
+        checkMessageMarker.call(this, function () {
+            this.assertFalse(true, "marker");
         });
     }
     
     function testAssertIdenticalPositive() {
-        a.assertIdentical(1, 1);
-        a.assertIdentical(null, null);
-        a.assertIdentical(undefined, undefined);
+        this.assertIdentical(1, 1);
+        this.assertIdentical(null, null);
+        this.assertIdentical(undefined, undefined);
         var obj = {};
-        a.assertIdentical(obj, obj);
+        this.assertIdentical(obj, obj);
     }
 
     function testAssertIdenticalNegative() {
-        a.assertException(function () {
-            a.assertIdentical(1, "1");
+        this.assertException(function () {
+            this.assertIdentical(1, "1");
         });
-        a.assertException(function () {
-            a.assertIdentical(null, undefined);
+        this.assertException(function () {
+            this.assertIdentical(null, undefined);
         });
-        a.assertException(function () {
-            a.assertIdentical(false, 0);
+        this.assertException(function () {
+            this.assertIdentical(false, 0);
         });
     }
 
     function testAssertIdenticalMessage() {
-        checkMessageMarker(function () {
-            a.assertIdentical(1, "1", "marker");
+        checkMessageMarker.call(this, function () {
+            this.assertIdentical(1, "1", "marker");
         });
     }
 
     function testAssertNotIdenticalPositive() {
-        a.assertNotIdentical("1", 1);
-        a.assertNotIdentical(undefined, null);
-        a.assertNotIdentical(1, true);
+        this.assertNotIdentical("1", 1);
+        this.assertNotIdentical(undefined, null);
+        this.assertNotIdentical(1, true);
         var obj1 = {};
         var obj2 = {};
-        a.assertNotIdentical(obj1, obj2);
+        this.assertNotIdentical(obj1, obj2);
     }
         
     function testAssertNotIdenticalNegative() {
-        a.assertException(function () {
-            a.assertNotIdentical(1, 1);
+        this.assertException(function () {
+            this.assertNotIdentical(1, 1);
         });
-        a.assertException(function () {
-            a.assertNotIdentical(null, null);
+        this.assertException(function () {
+            this.assertNotIdentical(null, null);
         });
-        a.assertException(function () {
-            a.assertNotIdentical(undefined, undefined);
+        this.assertException(function () {
+            this.assertNotIdentical(undefined, undefined);
         });
         var obj = {};
-        a.assertException(function () {
-            a.assertNotIdentical(obj, obj);
+        this.assertException(function () {
+            this.assertNotIdentical(obj, obj);
         });
     }
 
     function testAssertNotIdenticalMessage() {
-        checkMessageMarker(function () {
-            a.assertNotIdentical(1, 1, "marker");
+        checkMessageMarker.call(this, function () {
+            this.assertNotIdentical(1, 1, "marker");
         });
     }
 
     function testAssertEqualPositive() {
-        a.assertEqual(1, "1");
-        a.assertEqual({ a: 1, b: [ 2, 3 ] }, { a: 1, b: [ 2, 3 ] });
+        this.assertEqual(1, "1");
+        this.assertEqual({ a: 1, b: [ 2, 3 ] }, { a: 1, b: [ 2, 3 ] });
     }
 
     function testAssertEqualNegative() {
-        a.assertException(function () {
-            a.assertEqual("2", 1);
+        this.assertException(function () {
+            this.assertEqual("2", 1);
         });
-        a.assertException(function () {
-            a.assertEqual({}, null);
+        this.assertException(function () {
+            this.assertEqual({}, null);
         });
-        a.assertException(function () {
-            a.assertEqual(undefined, null);
+        this.assertException(function () {
+            this.assertEqual(undefined, null);
         });
     }
 
     function testAssertEqualMessage() {
-        checkMessageMarker(function () {
-            a.assertEqual("2", 1, "marker");
+        checkMessageMarker.call(this, function () {
+            this.assertEqual("2", 1, "marker");
         });
     }
 
     function testAssertNotEqualPositive() {
-        a.assertNotEqual(1, "2");
-        a.assertNotEqual(null, {});
+        this.assertNotEqual(1, "2");
+        this.assertNotEqual(null, {});
     }
         
     function testAssertNotEqualNegative() {
-        a.assertException(function () {
-            a.assertNotEqual("2", 2);
+        this.assertException(function () {
+            this.assertNotEqual("2", 2);
         });
-        a.assertException(function () {
-            a.assertNotEqual({ a: 1, b: [ 2, 3 ] }, { a: 1, b: [ 2, 3 ] });
+        this.assertException(function () {
+            this.assertNotEqual({ a: 1, b: [ 2, 3 ] }, { a: 1, b: [ 2, 3 ] });
         });
     }
 
     function testAssertNotEqualMessage() {
-        checkMessageMarker(function () {
-            a.assertNotEqual("2", 2, "marker");
+        checkMessageMarker.call(this, function () {
+            this.assertNotEqual("2", 2, "marker");
         });
     }
 
     function testAssertMatchPositive() {
-        a.assertMatch(/es/, "test");
+        this.assertMatch(/es/, "test");
     }
 
     function testAssertMatchNegative() {
-        a.assertException(function () {
-            a.assertMatch(/foo/, "test");
+        this.assertException(function () {
+            this.assertMatch(/foo/, "test");
         });
     }
 
     function testAssertMatchMessage() {
-        checkMessageMarker(function () {
-            a.assertMatch(/foo/, "test", "marker");
+        checkMessageMarker.call(this, function () {
+            this.assertMatch(/foo/, "test", "marker");
         });
     }
     
     function testAssertNotMatchPositive() {
-        a.assertNotMatch(/foo/, "test");
+        this.assertNotMatch(/foo/, "test");
     }
 
     function testAssertNotMatchNegative() {
-        a.assertException(function () {
-            a.assertNotMatch(/es/, "test");
+        this.assertException(function () {
+            this.assertNotMatch(/es/, "test");
         });
     }
 
     function testAssertNotMatchMessage() {
-        checkMessageMarker(function () {
-            a.assertNotMatch(/es/, "test", "marker");
+        checkMessageMarker.call(this, function () {
+            this.assertNotMatch(/es/, "test", "marker");
         });
     }
     
     function testAssertTypeOfPositive() {
-        a.assertTypeOf("string", "test");
+        this.assertTypeOf("string", "test");
     }
 
     function testAssertTypeOfNegative() {
-        a.assertException(function () {
-            a.assertTypeOf("number", "test");
+        this.assertException(function () {
+            this.assertTypeOf("number", "test");
         });
     }
 
     function testAssertTypeOfMessage() {
-        checkMessageMarker(function () {
-            a.assertTypeOf("number", "test", "marker");
+        checkMessageMarker.call(this, function () {
+            this.assertTypeOf("number", "test", "marker");
         });
     }
     
     function testAssertNotTypeOfPositive() {
-        a.assertNotTypeOf("string", 1);
+        this.assertNotTypeOf("string", 1);
     }
 
     function testAssertNotTypeOfNegative() {
-        a.assertException(function () {
-            a.assertNotTypeOf("number", 1);
+        this.assertException(function () {
+            this.assertNotTypeOf("number", 1);
         });
     }
 
     function testAssertNotTypeOfMessage() {
-        checkMessageMarker(function () {
-            a.assertNotTypeOf("number", 1, "marker");
+        checkMessageMarker.call(this, function () {
+            this.assertNotTypeOf("number", 1, "marker");
         });
     }
 
     function testAssertInstanceOfPositive() {
-        a.assertInstanceOf(String, new String("test"));
+        this.assertInstanceOf(String, new String("test"));
     }
 
     function testAssertInstanceOfNegative() {
-        a.assertException(function () {
-            a.assertInstanceOf(Number, {});
+        this.assertException(function () {
+            this.assertInstanceOf(Number, {});
         });
     }
 
     function testAssertInstanceOfMessage() {
-        checkMessageMarker(function () {
-            a.assertInstanceOf(Number, {}, "marker");
+        checkMessageMarker.call(this, function () {
+            this.assertInstanceOf(Number, {}, "marker");
         });
     }
     
     function testAssertNotInstanceOfPositive() {
-        a.assertNotInstanceOf(String, []);
+        this.assertNotInstanceOf(String, []);
     }
 
     function testAssertNotInstanceOfNegative() {
-        a.assertException(function () {
-            a.assertNotInstanceOf(Number, new Number(1));
+        this.assertException(function () {
+            this.assertNotInstanceOf(Number, new Number(1));
         });
     }
 
     function testAssertNotInstanceOfMessage() {
-        checkMessageMarker(function () {
-            a.assertNotInstanceOf(Number, new Number(1), "marker");
+        checkMessageMarker.call(this, function () {
+            this.assertNotInstanceOf(Number, new Number(1), "marker");
         });
     }
 
     function testAssertNullPositive() {
-        a.assertNull(null);
+        this.assertNull(null);
     }
 
     function testAssertNullNegative() {
-        a.assertException(function () {
-            a.assertNull(1);
+        this.assertException(function () {
+            this.assertNull(1);
         });
     }
 
     function testAssertNullMessage() {
-        checkMessageMarker(function () {
-            a.assertNull(1, "marker");
+        checkMessageMarker.call(this, function () {
+            this.assertNull(1, "marker");
         });
     }
 
     function testAssertNotNullPositive() {
-        a.assertNotNull(1);
+        this.assertNotNull(1);
     }
 
     function testAssertNotNullNegative() {
-        a.assertException(function () {
-            a.assertNotNull(null);
+        this.assertException(function () {
+            this.assertNotNull(null);
         });
     }
 
     function testAssertNotNullMessage() {
-        checkMessageMarker(function () {
-            a.assertNotNull(null, "marker");
+        checkMessageMarker.call(this, function () {
+            this.assertNotNull(null, "marker");
         });
     }
 
     function testAssertUndefinedPositive() {
-        a.assertUndefined(undefined);
+        this.assertUndefined(undefined);
     }
 
     function testAssertUndefinedNegative() {
-        a.assertException(function () {
-            a.assertUndefined(1);
+        this.assertException(function () {
+            this.assertUndefined(1);
         });
     }
 
     function testAssertUndefinedMessage() {
-        checkMessageMarker(function () {
-            a.assertUndefined(1, "marker");
+        checkMessageMarker.call(this, function () {
+            this.assertUndefined(1, "marker");
         });
     }
 
     function testAssertNotUndefinedPositive() {
-        a.assertNotUndefined(1);
+        this.assertNotUndefined(1);
     }
 
     function testAssertNotUndefinedNegative() {
-        a.assertException(function () {
-            a.assertNotUndefined(undefined);
+        this.assertException(function () {
+            this.assertNotUndefined(undefined);
         });
     }
 
     function testAssertNotUndefinedMessage() {
-        checkMessageMarker(function () {
-            a.assertNotUndefined(undefined, "marker");
+        checkMessageMarker.call(this, function () {
+            this.assertNotUndefined(undefined, "marker");
         });
     }
 
     function testAssertNaNPositive() {
-        a.assertNaN(NaN);
-        a.assertNaN("test");
+        this.assertNaN(NaN);
+        this.assertNaN("test");
     }
 
     function testAssertNaNNegative() {
-        a.assertException(function () {
-            a.assertNaN(1);
+        this.assertException(function () {
+            this.assertNaN(1);
         });
     }
 
     function testAssertNaNMessage() {
-        checkMessageMarker(function () {
-            a.assertNaN(1, "marker");
+        checkMessageMarker.call(this, function () {
+            this.assertNaN(1, "marker");
         });
     }
 
     function testAssertNotNaNPositive() {
-        a.assertNotNaN(1);
+        this.assertNotNaN(1);
     }
 
     function testAssertNotNaNNegative() {
-        a.assertException(function () {
-            a.assertNotNaN(NaN);
+        this.assertException(function () {
+            this.assertNotNaN(NaN);
         });
-        a.assertException(function () {
-            a.assertNotNaN("test");
+        this.assertException(function () {
+            this.assertNotNaN("test");
         });
     }
 
     function testAssertNotNaNMessage() {
-        checkMessageMarker(function () {
-            a.assertNotNaN(NaN, "marker");
+        checkMessageMarker.call(this, function () {
+            this.assertNotNaN(NaN, "marker");
         });
     }
 
     function testFail() {
-        a.assertException(function () {
-            a.fail();
+        this.assertException(function () {
+            this.fail();
         });
     }
 
     function testFailMessage() {
-        checkMessageMarker(function () {
-            a.fail("marker");
+        checkMessageMarker.call(this, function () {
+            this.fail("marker");
         });
     }
 }

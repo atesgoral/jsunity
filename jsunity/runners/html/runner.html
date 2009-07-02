@@ -1,0 +1,80 @@
+﻿<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
+<title>jsUnity HTML Runner</title>
+<link rel="stylesheet" type="text/css" href="jquery.tooltip.css">
+<link rel="stylesheet" type="text/css" href="style.css">
+<link rel="icon" type="image/gif" href="i/jsunity_square_16.gif">
+<script type="text/javascript" src="../../jsunity.js"></script>
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.3.2/jquery.min.js"></script>
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.5.2/jquery-ui.min.js"></script>
+<script type="text/javascript" src="jquery.tooltip.min.js"></script>
+<script type="text/javascript" src="runner.js"></script>
+</head>
+<body>
+<div id="message">
+    <span id="txt">Do you have JavaScript or CSS disabled? You need to enable at least JavaScript to be able run any JavaScript tests.</span>
+    <a href="#" class="hidden" id="close">Dismiss</a>
+</div>
+<div id="main">
+    <div id="header">
+        <h1 title="jsUnity"><span>jsUnity</span></h1>
+        <div id="tagline">HTML Runner v0.1</div>
+    </div>
+    <div id="dialog">
+        <div id="settings">
+            <div id="fields">
+                <div class="field mandatory">
+                    <label for="testSuiteUrl" title="This field is mandatory">Test Suite URL</label>
+                    <span class="input" title="The URL of the test suite or multiple test suites delimited by commas."><input type="text" id="testSuiteUrl" size="64"/></span>
+                </div>
+                <div class="field mandatory">
+                    <label for="testSuiteName" title="This field is mandatory">Test Suite Name</label>
+                    <span class="input" title="The name of the test suite or multiple test suites delimited by commas."><input type="text" id="testSuiteName" size="64"/></span>
+                </div>
+                <div class="field">
+                    <label for="rawResultUrl">Raw Results URL</label>
+                    <span class="input" title="Raw results will be posted to this URL."><input type="text" id="rawResultUrl" size="64"/></span>
+                </div>
+                <div class="field">
+                    <label for="xmlResultUrl">XML Results URL</label>
+                    <span class="input" title="XML results (in JUnit format) will be posted to this URL."><input type="text" id="xmlResultUrl" size="64"/></span>
+                </div>
+                <div class="field">
+                    <label for="tapUrl">TAP URL</label>
+                    <span class="input" title="TAP data will be posted to this URL."><input type="text" id="tapUrl" size="64"/></span>
+                </div>
+                <div class="field">
+                    <label for="logUrl">Log URL</label>
+                    <span class="input" title="Log data will be posted to this URL."><input type="text" id="logUrl" size="64"/></span>
+                </div>
+            </div>
+            <div id="options" class="field">
+                <label for="autoRun">Auto-Run</label>
+                <span class="input" title="When checked, the tests will start running automatically."><input type="checkbox" id="autoRun"/></span>
+                <span class="spacer">|</span>
+                <label for="logLevel">Log Level</label>
+                <span class="input" title="The log verbosity level for jsUnity."><select id="logLevel">
+                    <option>error</option>
+                    <option>warn</option>
+                    <option selected>info</option>
+                    <option>debug</option>
+                </select></span>
+            </div>
+        </div>
+        <div id="controls">
+            <button id="run">Run</button>
+            <button id="stop">Stop</button>
+        </div>
+    </div>
+    <div id="log"></div>
+</div>
+<div id="footer">
+    <ul>
+        <li>Silk icon set 1.3 by <a href="http://www.famfamfam.com/lab/icons/silk/">Mark James</a></li>
+        <li>jQuery Tooltip plugin 1.3 by <a href="http://bassistance.de/jquery-plugins/jquery-plugin-tooltip/">Jörn Zaefferer</a></li>
+    </ul>
+</div>
+</body>
+</html>
