@@ -1,15 +1,15 @@
 //<%
+function checkMessageMarker(fn) {
+    try {
+        fn.call(this);
+    } catch (e) {
+        this.assertMatch(/marker/, e);
+    }
+}
+
 function AssertionTestSuite() {
     function setUp() {
         jsUnity.attachAssertions(this);
-    }
-    
-    function checkMessageMarker(fn) {
-        try {
-            fn.call(this);
-        } catch (e) {
-            this.assertMatch(/marker/, e);
-        }
     }
 
     function testAssertExceptionPositive() {
