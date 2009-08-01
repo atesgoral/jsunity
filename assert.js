@@ -1,4 +1,4 @@
-﻿// Be SSJS-module-friendly; populate exports if exists, otherwise define a new
+// Be SSJS-module-friendly; populate exports if exists, otherwise define a new
 // global object.
 assert = typeof exports === "undefined" ? {} : exports;
 
