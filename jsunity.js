@@ -9,9 +9,11 @@
  */
 
 jsUnity = (function () {
+    function empty() {}
+
     function fmt(str) {
         var a = Array.prototype.slice.call(arguments, 1);
-        return str.replace(/\?/g, function () { return a.shift(); });
+        return str.replace(/\{(\d+)\}/g, function (s, i) { return a[i]; });
     }
 
     function bind(fn, scope) {
@@ -21,166 +23,6 @@ jsUnity = (function () {
             }
             : empty;
     }
-
-    function hash(v) {
-        if (v instanceof Object) {
-            var arr = [];
-            
-            for (var p in v) {
-                arr.push(p);
-                arr.push(hash(v[p]));    
-            }
-            
-            return arr.join("#");
-        } else {
-            return String(v);
-        }
-    }
-    
-    var defaultAssertions = {
-        assertException: function (fn, message) {
-            try {
-                fn instanceof Function && fn();
-            } catch (e) {
-                return;
-            }
-
-            throw fmt("?: (?) does not raise an exception or not a function",
-                message || "assertException", fn);
-        },
-
-        assertTrue: function (actual, message) {
-            if (!actual) {
-                throw fmt("?: (?) does not evaluate to true",
-                    message || "assertTrue", actual);
-            }
-        },
-        
-        assertFalse: function (actual, message) {
-            if (actual) {
-                throw fmt("?: (?) does not evaluate to false",
-                    message || "assertFalse", actual);
-            }
-        },
-        
-        assertIdentical: function (expected, actual, message) {
-            if (expected !== actual) {
-                throw fmt("?: (?) is not identical to (?)",
-                    message || "assertIdentical", actual, expected);
-            }
-        },
-
-        assertNotIdentical: function (expected, actual, message) {
-            if (expected === actual) {
-                throw fmt("?: (?) is identical to (?)",
-                    message || "assertNotIdentical", actual, expected);
-            }
-        },
-
-        assertEqual: function (expected, actual, message) {
-            if (hash(expected) != hash(actual)) {
-                throw fmt("?: (?) is not equal to (?)",
-                    message || "assertEqual", actual, expected);
-            }
-        },
-        
-        assertNotEqual: function (expected, actual, message) {
-            if (hash(expected) == hash(actual)) {
-                throw fmt("?: (?) is equal to (?)",
-                    message || "assertNotEqual", actual, expected);
-            }
-        },
-        
-        assertMatch: function (re, actual, message) {
-            if (!re.test(actual)) {
-                throw fmt("?: (?) does not match (?)",
-                    message || "assertMatch", actual, re);
-            }
-        },
-        
-        assertNotMatch: function (re, actual, message) {
-            if (re.test(actual)) {
-                throw fmt("?: (?) matches (?)",
-                    message || "assertNotMatch", actual, re);
-            }
-        },
-        
-        assertTypeOf: function (typ, actual, message) {
-            if (typeof actual !== typ) {
-                throw fmt("?: (?) is not of type (?)",
-                    message || "assertTypeOf", actual, typ);
-            }
-        },
-
-        assertNotTypeOf: function (typ, actual, message) {
-            if (typeof actual === typ) {
-                throw fmt("?: (?) is of type (?)",
-                    message || "assertNotTypeOf", actual, typ);
-            }
-        },
-        
-        assertInstanceOf: function (cls, actual, message) {
-            if (!(actual instanceof cls)) {
-                throw fmt("?: (?) is not an instance of (?)",
-                    message || "assertInstanceOf", actual, cls);
-            }
-        },
-
-        assertNotInstanceOf: function (cls, actual, message) {
-            if (actual instanceof cls) {
-                throw fmt("?: (?) is an instance of (?)",
-                    message || "assertNotInstanceOf", actual, cls);
-            }
-        },
-
-        assertNull: function (actual, message) {
-            if (actual !== null) {
-                throw fmt("?: (?) is not null",
-                    message || "assertNull", actual);
-            }
-        },
-        
-        assertNotNull: function (actual, message) {
-            if (actual === null) {
-                throw fmt("?: (?) is null",
-                    message || "assertNotNull", actual);
-            }
-        },
-        
-        assertUndefined: function (actual, message) {
-            if (actual !== undefined) {
-                throw fmt("?: (?) is not undefined",
-                    message || "assertUndefined", actual);
-            }
-        },
-        
-        assertNotUndefined: function (actual, message) {
-            if (actual === undefined) {
-                throw fmt("?: (?) is undefined",
-                    message || "assertNotUndefined", actual);
-            }
-        },
-        
-        assertNaN: function (actual, message) {
-            if (!isNaN(actual)) {
-                throw fmt("?: (?) is not NaN",
-                    message || "assertNaN", actual);
-            }
-        },
-        
-        assertNotNaN: function (actual, message) {
-            if (isNaN(actual)) {
-                throw fmt("?: (?) is NaN",
-                    message || "assertNotNaN", actual);
-            }
-        },
-        
-        fail: function (message) {
-            throw message || "fail";
-        }
-    };
-    
-    function empty() {}
     
     function plural(cnt, unit) {
         return cnt + " " + unit + (cnt == 1 ? "" : "s");
@@ -335,18 +177,18 @@ jsUnity = (function () {
     function resultsPass(index, testName) {
         resultsStream.pass.apply(this, arguments);
 
-        tapStream.write(fmt("ok ? - ?", index, testName));
+        tapStream.write(fmt("ok {0} - {1}", index, testName));
         logStream.info("[PASSED] " + testName);
     }
 
     function resultsFail(index, testName, message) {
         resultsStream.fail.apply(this, arguments);
 
-        tapStream.write(fmt("not ok ? - ?", index, testName));
+        tapStream.write(fmt("not ok {0} - {1}", index, testName));
         tapStream.write("  ---");
         tapStream.write("  " + message);
         tapStream.write("  ...");
-        logStream.info(fmt("[FAILED] ?: ?", testName, message));
+        logStream.info(fmt("[FAILED] {0}: {1}", testName, message));
     }
 
     function resultsEnd(passed, failed, duration) {
