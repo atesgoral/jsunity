@@ -10,25 +10,22 @@ var global = {
     tearDown: tearDown
 };
 
-var a = {};
-jsUnity.attachAssertions(a);
-
 function checkAssertions(scope) {
     for (var fn in jsUnity.assertions) {
-        a.assertIdentical(jsUnity.assertions[fn], scope[fn]);
+        assert.is(jsUnity.assertions[fn], scope[fn]);
     }
 }
 
-function CoreTestSuite() {
+function coreTestSuite() {
     function checkResults(results, suiteName) {
-        a.assertInstanceOf(jsUnity.TestResults, results);
-        a.assertIdentical(suiteName || "", results.suiteName);
-        a.assertIdentical(3, results.total);
-        a.assertIdentical(2, results.passed);
-        a.assertIdentical(1, results.failed);
+        assert.instanceOf(jsUnity.TestResults, results);
+        assert.is(suiteName || "", results.suiteName);
+        assert.is(3, results.total);
+        assert.is(2, results.passed);
+        assert.is(1, results.failed);
 
-        a.assertIdentical(3, global.setUps);
-        a.assertIdentical(3, global.tearDowns);
+        assert.is(3, global.setUps);
+        assert.is(3, global.tearDowns);
     }
 
     function setUp() {
@@ -75,7 +72,7 @@ function CoreTestSuite() {
             }
         });
         
-        a.assertEqual([ "setUp", "testPassing", "tearDown" ], calls);
+        assert.eq([ "setUp", "testPassing", "tearDown" ], calls);
     }
 
     function testSetUpTearDownCalledFailing() {
@@ -90,11 +87,11 @@ function CoreTestSuite() {
             },
             testFailing: function () {
                 calls.push("testFailing");
-                a.fail();
+                assert.fail();
             }
         });
         
-        a.assertEqual([ "setUp", "testFailing", "tearDown" ], calls);
+        assert.eq([ "setUp", "testFailing", "tearDown" ], calls);
     }
 
     function testArgumentsPassing() {
@@ -112,7 +109,7 @@ function CoreTestSuite() {
             }
         });
         
-        a.assertEqual([ "testPassing", "testPassing", "testPassing" ], calls);
+        assert.eq([ "testPassing", "testPassing", "testPassing" ], calls);
     }
 
     function testArgumentsFailing() {
@@ -127,17 +124,17 @@ function CoreTestSuite() {
             },
             testFailing: function (testName) {
                 calls.push(testName);
-                a.fail();
+                assert.fail();
             }
         });
         
-        a.assertEqual([ "testFailing", "testFailing", "testFailing" ], calls);
+        assert.eq([ "testFailing", "testFailing", "testFailing" ], calls);
     }
 
     function testLogCalled() {
         var results = jsUnity.run(function () {});
 
-        a.assertEqual(
+        assert.eq(
             [
                 [ "Running unnamed test suite", "info" ],
                 [ "0 tests found", "info" ],
@@ -159,25 +156,8 @@ function CoreTestSuite() {
 
         jsUnity.log.error = hijackedError;
 
-        a.assertIdentical(false, results);
-        a.assertTrue(errorCalled);
-    }
-
-    function testAttachAssertionsDefaultScope() {
-        var scope = {};
-        var hijackedScope = jsUnity.env.defaultScope;
-
-        jsUnity.env.defaultScope = scope;
-        jsUnity.attachAssertions();
-        jsUnity.env.defaultScope = hijackedScope;
-        
-        checkAssertions(scope);        
-    }
-
-    function testAttachAssertionsGivenScope() {
-        var scope = {};
-        jsUnity.attachAssertions(scope);
-        checkAssertions(scope);
+        assert.is(false, results);
+        assert.isTrue(errorCalled);
     }
 
     function testCompileTestSuite() {
@@ -191,13 +171,13 @@ function CoreTestSuite() {
         
         var testSuite = jsUnity.compile(origTestSuite);
         
-        a.assertInstanceOf(jsUnity.TestSuite, testSuite);
-        a.assertIdentical("TestSuite", testSuite.suiteName);
-        a.assertIdentical(scope, testSuite.scope);
-        a.assertIdentical(global.setUp, testSuite.setUp);
-        a.assertIdentical(global.tearDown, testSuite.tearDown);
-        a.assertIdentical("testDummy", testSuite.tests[0].name);
-        a.assertIdentical(testDummy, testSuite.tests[0].fn);
+        assert.instanceOf(jsUnity.TestSuite, testSuite);
+        assert.is("TestSuite", testSuite.suiteName);
+        assert.is(scope, testSuite.scope);
+        assert.is(global.setUp, testSuite.setUp);
+        assert.is(global.tearDown, testSuite.tearDown);
+        assert.is("testDummy", testSuite.tests[0].name);
+        assert.is(testDummy, testSuite.tests[0].fn);
     }
 
     function testCompileNamedFunction() {
@@ -216,13 +196,13 @@ function CoreTestSuite() {
         var internals = namedTestSuite();
         var testSuite = jsUnity.compile(namedTestSuite);
 
-        a.assertInstanceOf(jsUnity.TestSuite, testSuite);
-        a.assertIdentical("namedTestSuite", testSuite.suiteName);
-        a.assertTypeOf("object", testSuite.scope);
-        a.assertEqual(internals.setUp, testSuite.setUp);
-        a.assertEqual(internals.tearDown, testSuite.tearDown);
-        a.assertIdentical("testDummy", testSuite.tests[0].name);
-        a.assertEqual(internals.testDummy, testSuite.tests[0].fn);
+        assert.instanceOf(jsUnity.TestSuite, testSuite, "compiled test suite is instance of jsUnity.TestSuite");
+        assert.is("namedTestSuite", testSuite.suiteName, "suiteName property is correctly set");
+        assert.typeOf("object", testSuite.scope, "scope is assigned and object");
+        assert.eq(internals.setUp, testSuite.setUp, "1");
+        assert.eq(internals.tearDown, testSuite.tearDown, "2");
+        assert.is("testDummy", testSuite.tests[0].name, "3");
+        assert.eq(internals.testDummy, testSuite.tests[0].fn, "4");
     }
 
     function testCompileAnonymousFunction() {
@@ -241,13 +221,13 @@ function CoreTestSuite() {
         var internals = anonymousTestSuite();
         var testSuite = jsUnity.compile(anonymousTestSuite);
 
-        a.assertInstanceOf(jsUnity.TestSuite, testSuite);
-        a.assertUndefined(testSuite.suiteName);
-        a.assertTypeOf("object", testSuite.scope);
-        a.assertEqual(internals.setUp, testSuite.setUp);
-        a.assertEqual(internals.tearDown, testSuite.tearDown);
-        a.assertIdentical("testDummy", testSuite.tests[0].name);
-        a.assertEqual(internals.testDummy, testSuite.tests[0].fn);
+        assert.instanceOf(jsUnity.TestSuite, testSuite);
+        assert.isUndefined(testSuite.suiteName);
+        assert.typeOf("object", testSuite.scope);
+        assert.eq(internals.setUp, testSuite.setUp);
+        assert.eq(internals.tearDown, testSuite.tearDown);
+        assert.is("testDummy", testSuite.tests[0].name);
+        assert.eq(internals.testDummy, testSuite.tests[0].fn);
     }
 
     function testCompileArrayOfFunctions() {
@@ -259,13 +239,13 @@ function CoreTestSuite() {
 
         var testSuite = jsUnity.compile(arrayTestSuite);
 
-        a.assertInstanceOf(jsUnity.TestSuite, testSuite);
-        a.assertUndefined(testSuite.suiteName);
-        a.assertTypeOf("object", testSuite.scope);
-        a.assertIdentical(global.setUp, testSuite.setUp);
-        a.assertIdentical(global.tearDown, testSuite.tearDown);
-        a.assertIdentical("testGlobalPass1", testSuite.tests[0].name);
-        a.assertIdentical(testGlobalPass1, testSuite.tests[0].fn);
+        assert.instanceOf(jsUnity.TestSuite, testSuite);
+        assert.isUndefined(testSuite.suiteName);
+        assert.typeOf("object", testSuite.scope);
+        assert.is(global.setUp, testSuite.setUp);
+        assert.is(global.tearDown, testSuite.tearDown);
+        assert.is("testGlobalPass1", testSuite.tests[0].name);
+        assert.is(testGlobalPass1, testSuite.tests[0].fn);
     }
 
     function testCompileArrayOfStrings() {
@@ -277,13 +257,13 @@ function CoreTestSuite() {
 
         var testSuite = jsUnity.compile(arrayTestSuite);
 
-        a.assertInstanceOf(jsUnity.TestSuite, testSuite);
-        a.assertUndefined(testSuite.suiteName);
-        a.assertTypeOf("object", testSuite.scope);
-        a.assertIdentical(global.setUp, testSuite.setUp);
-        a.assertIdentical(global.tearDown, testSuite.tearDown);
-        a.assertIdentical("testGlobalPass1", testSuite.tests[0].name);
-        a.assertIdentical(testGlobalPass1, testSuite.tests[0].fn);
+        assert.instanceOf(jsUnity.TestSuite, testSuite);
+        assert.isUndefined(testSuite.suiteName);
+        assert.typeOf("object", testSuite.scope);
+        assert.is(global.setUp, testSuite.setUp);
+        assert.is(global.tearDown, testSuite.tearDown);
+        assert.is("testGlobalPass1", testSuite.tests[0].name);
+        assert.is(testGlobalPass1, testSuite.tests[0].fn);
     }
 
     function testCompileObject() {
@@ -296,13 +276,13 @@ function CoreTestSuite() {
         
         var testSuite = jsUnity.compile(objectTestSuite);
         
-        a.assertInstanceOf(jsUnity.TestSuite, testSuite);
-        a.assertIdentical("TestSuite", testSuite.suiteName);
-        a.assertIdentical(objectTestSuite, testSuite.scope);
-        a.assertIdentical(global.setUp, testSuite.setUp);
-        a.assertIdentical(global.tearDown, testSuite.tearDown);
-        a.assertIdentical("testGlobalPass1", testSuite.tests[0].name);
-        a.assertIdentical(testGlobalPass1, testSuite.tests[0].fn);
+        assert.instanceOf(jsUnity.TestSuite, testSuite);
+        assert.is("TestSuite", testSuite.suiteName);
+        assert.is(objectTestSuite, testSuite.scope);
+        assert.is(global.setUp, testSuite.setUp);
+        assert.is(global.tearDown, testSuite.tearDown);
+        assert.is("testGlobalPass1", testSuite.tests[0].name);
+        assert.is(testGlobalPass1, testSuite.tests[0].fn);
     }
 
     function testCompileString() {
@@ -311,19 +291,19 @@ function CoreTestSuite() {
 
         var testSuite = jsUnity.compile(stringTestSuite);
 
-        a.assertInstanceOf(jsUnity.TestSuite, testSuite);
-        a.assertUndefined(testSuite.suiteName);
-        a.assertTypeOf("object", testSuite.scope);
-        a.assertEqual(global.setUp, testSuite.setUp);
-        a.assertEqual(global.tearDown, testSuite.tearDown);
-        a.assertIdentical("testGlobalPass1", testSuite.tests[0].name);
-        a.assertEqual(testGlobalPass1, testSuite.tests[0].fn);
+        assert.instanceOf(jsUnity.TestSuite, testSuite);
+        assert.isUndefined(testSuite.suiteName);
+        assert.typeOf("object", testSuite.scope);
+        assert.eq(global.setUp, testSuite.setUp);
+        assert.eq(global.tearDown, testSuite.tearDown);
+        assert.is("testGlobalPass1", testSuite.tests[0].name);
+        assert.eq(testGlobalPass1, testSuite.tests[0].fn);
     }
 
     function testCompileNumber() {
         try {
             jsUnity.compile(42);
-            a.fail();
+            assert.fail();
         } catch (e) {
             // pass
         }
@@ -413,7 +393,7 @@ function CoreTestSuite() {
     }
 
     function testRunNumberFails() {
-        a.assertFalse(jsUnity.run(42));
+        assert.isFalse(jsUnity.run(42));
     }
     
     function testRunMultipleReturnsResults() {
@@ -422,7 +402,7 @@ function CoreTestSuite() {
         }
         
         function namedTestSuite2() {
-            function testThatFails() { a.fail(); }
+            function testThatFails() { assert.fail(); }
         }
         
         var anonymousTestSuite = function () {
@@ -430,11 +410,11 @@ function CoreTestSuite() {
 
         var results = jsUnity.run(
             namedTestSuite1, namedTestSuite2, anonymousTestSuite);
-        a.assertIdentical("namedTestSuite1,namedTestSuite2,",
+        assert.is("namedTestSuite1,namedTestSuite2,",
             results.suiteName);
-        a.assertIdentical(2, results.total);
-        a.assertIdentical(1, results.passed);
-        a.assertIdentical(1, results.failed);
+        assert.is(2, results.total);
+        assert.is(1, results.passed);
+        assert.is(1, results.failed);
     }
     
     function testRunTestSuiteBindsGivenScopeAsTestScope() {
@@ -442,19 +422,19 @@ function CoreTestSuite() {
         testSuite.tests.push({
             name: "testMarker",
             fn: function () {
-                a.assertTrue(this.marker);
+                assert.isTrue(this.marker);
             }
         });
 
         var results = jsUnity.run(testSuite);
 
-        a.assertIdentical(1, results.passed);
+        assert.is(1, results.passed);
     }
 
     function testRunFunctionWontBindFunctionAsTestScope() {
         function testSuite() {
             function testMarker() {
-                a.assertTrue(this.marker);
+                assert.isTrue(this.marker);
             }
         }
 
@@ -462,12 +442,12 @@ function CoreTestSuite() {
 
         var results = jsUnity.run(testSuite);
 
-        a.assertIdentical(1, results.failed);
+        assert.is(1, results.failed);
     }
 
     function testRunArrayWontBindArrayAsTestScope() {
         function testMarker() {
-            a.assertTrue(this.marker);
+            assert.isTrue(this.marker);
         }
 
         var testSuite = [ testMarker ];
@@ -476,19 +456,19 @@ function CoreTestSuite() {
 
         var results = jsUnity.run(testSuite);
 
-        a.assertIdentical(1, results.failed);
+        assert.is(1, results.failed);
     }
 
     function testRunStringWontBindStringAsTestScope() {
         var testSuite = "function testMarker() {"
-            + "a.assertTrue(this.marker);"
+            + "assert.isTrue(this.marker);"
             + "}";
 
         testSuite.marker = true;
 
         var results = jsUnity.run(testSuite);
 
-        a.assertIdentical(1, results.failed);
+        assert.is(1, results.failed);
     }
 
     function testRunObjectBindsObjectAsTestScope() {
@@ -496,11 +476,11 @@ function CoreTestSuite() {
             marker: true,
 
             testMarker: function () {
-                a.assertTrue(this.marker);
+                assert.isTrue(this.marker);
             }
         });
 
-        a.assertIdentical(1, results.passed);
+        assert.is(1, results.passed);
     }
     
     function testRunObjectBindsObjectAsSetUpScope() {
@@ -509,11 +489,11 @@ function CoreTestSuite() {
                 this.marker = true;
             },
             testMarker: function () {
-                a.assertTrue(this.marker);
+                assert.isTrue(this.marker);
             }
         });
 
-        a.assertIdentical(1, results.passed);
+        assert.is(1, results.passed);
     }
 
     function testRunObjectBindsObjectAsPassingTearDownScope() {
@@ -523,11 +503,11 @@ function CoreTestSuite() {
             },
             testPassing: function () {},
             testMarker: function () {
-                a.assertTrue(this.marker);
+                assert.isTrue(this.marker);
             }
         });
 
-        a.assertIdentical(2, results.passed);
+        assert.is(2, results.passed);
     }
 
     function testRunObjectBindsObjectAsFailingTearDownScope() {
@@ -536,15 +516,15 @@ function CoreTestSuite() {
                 this.marker = true;
             },
             testFailing: function () {
-                a.fail();
+                assert.fail();
             },
             testMarker: function () {
-                a.assertTrue(this.marker);
+                assert.isTrue(this.marker);
             }
         });
 
-        a.assertIdentical(1, results.passed);
-        a.assertIdentical(1, results.failed);
+        assert.is(1, results.passed);
+        assert.is(1, results.failed);
     }
 }
 //%>

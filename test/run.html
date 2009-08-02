@@ -1,8 +1,9 @@
 <html>
 <head>
-    <title>Core + Assertion Test Suite Runner</title>
+    <title>Core Test Suite Runner</title>
     <script type="text/javascript" src="../jsunity.js"></script>
-    <script type="text/javascript" src="assertion.js"></script>
+    <script type="text/javascript" src="../equiv_and_hoozit.js"></script>
+    <script type="text/javascript" src="../assert.js"></script>
     <script type="text/javascript" src="core.js"></script>
     <style type="text/css">
         .level_error { color: red }
@@ -17,7 +18,7 @@
         document.write("<div class=\"level_" + level + "\">["
             + level.toUpperCase() + "] " + s + "</div>");
     };
-    jsUnity.run(AssertionTestSuite, CoreTestSuite);
+    jsUnity.run(coreTestSuite);
     </script>
 </body>
 </html>

@@ -51,7 +51,7 @@ assert.fail = function (message) {
 ("isFalse", function () { return arguments[0] === false; })
 ("match", function () { return arguments[0].test(arguments[1]); })
 ("typeOf", function () { return typeof arguments[1] === arguments[0]; })
-("instanceOf", function () { return arguments[0] instanceof arguments[1]; })
+("instanceOf", function () { return arguments[1] instanceof arguments[0]; })
 ("isNull", function () { return arguments[0] === null; })
 ("isUndefined", function () { return arguments[0] === undefined; })
 ("isNaN", function () { return isNaN(arguments[0]); })

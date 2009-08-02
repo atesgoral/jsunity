@@ -181,14 +181,14 @@ jsUnity = (function () {
         logStream.info("[PASSED] " + testName);
     }
 
-    function resultsFail(index, testName, message) {
+    function resultsFail(index, testName, error) {
         resultsStream.fail.apply(this, arguments);
 
         tapStream.write(fmt("not ok {0} - {1}", index, testName));
         tapStream.write("  ---");
-        tapStream.write("  " + message);
+        tapStream.write("  " + error.message);
         tapStream.write("  ...");
-        logStream.info(fmt("[FAILED] {0}: {1}", testName, message));
+        logStream.info(fmt("[FAILED] {0}: {1}", testName, error.message));
     }
 
     function resultsEnd(passed, failed, duration) {
@@ -217,21 +217,9 @@ jsUnity = (function () {
             this.tests = [];
         },
 
-        assertions: defaultAssertions,
-
         env: {
-            defaultScope: this,
-
             getDate: function () {
                 return new Date();
-            }
-        },
-        
-        attachAssertions: function (scope) {
-            scope = scope || this.env.defaultScope;
-
-            for (var fn in jsUnity.assertions) {
-                scope[fn] = jsUnity.assertions[fn];
             }
         },
 
@@ -317,7 +305,7 @@ jsUnity = (function () {
                         resultsFail(j + 1, test.name, e);
 
                         testOutcome.passed = false;
-                        testOutcome.failureMessage = e;
+                        testOutcome.error = e;
                     }
 
                     testOutcome.duration = jsUnity.env.getDate() - testStart;
