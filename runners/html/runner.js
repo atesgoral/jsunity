@@ -1,6 +1,6 @@
 function getQueryParams(qs) {
     function decode(s) {
-        return decodeURIComponent(s).split("+").join(" ");
+        return decodeURIComponent(s.split("+").join(" "));
     }
 
     var params = {};
